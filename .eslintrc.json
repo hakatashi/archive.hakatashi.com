@@ -1,0 +1,9 @@
+{
+    "extends": "@hakatashi",
+    "rules": {
+        "no-console": "off",
+        "max-params": "off",
+        "camelcase": "off",
+        "array-plural/array-plural": "off"
+    }
+}
