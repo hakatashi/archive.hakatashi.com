@@ -61,6 +61,13 @@
 				</div>
 			</div>
 
+			<input
+				v-model="apikey"
+				class="input"
+				type="text"
+				placeholder="API Key"
+			>
+
 			<div
 				ref="pswp"
 				class="pswp"
@@ -118,6 +125,11 @@ export default {
 			},
 		};
 	},
+	watch: {
+		apikey(newKey) {
+			localStorage.setItem('HAKATASHI_API_KEY', newKey);
+		},
+	},
 	async mounted() {
 		const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/twitter?apikey=${this.apikey}`);
 		const data = await res.json();
@@ -132,10 +144,12 @@ export default {
 				index,
 				getThumbBoundsFn: (i) => {
 					const rect = parentElement.children[i].querySelector('img').getBoundingClientRect();
+					const medium = this.media[i];
+					const zoom = Math.max(rect.width / medium.w, rect.height / medium.h);
 					return {
-						x: rect.left,
-						y: rect.top + window.pageYOffset,
-						w: rect.width,
+						x: rect.left + (rect.width - medium.w * zoom) / 2,
+						y: rect.top + (rect.height - medium.h * zoom) / 2 + window.pageYOffset,
+						w: medium.w * zoom,
 					};
 				},
 			});
