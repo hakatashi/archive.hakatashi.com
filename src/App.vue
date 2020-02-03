@@ -113,7 +113,9 @@ export default {
 			msg: 'Welcome to Your Vue.js App!!',
 			apikey: localStorage.getItem('HAKATASHI_API_KEY'),
 			media: [],
-			entry: {},
+			entry: {
+				user: {},
+			},
 		};
 	},
 	async mounted() {
