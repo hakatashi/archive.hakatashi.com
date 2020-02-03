@@ -2,9 +2,14 @@
 	<section class="section">
 		<div class="container is-fluid">
 			<h1>{{entry.text}}</h1>
-			<div class="columns is-mobile is-multiline" itemscope itemtype="http://schema.org/ImageGallery">
+			<div
+				class="photoswipe-gallery columns is-mobile is-multiline"
+				itemscope
+				itemtype="http://schema.org/ImageGallery"
+				data-pswp-uid="pswp"
+			>
 				<div
-					v-for="medium in media"
+					v-for="(medium, index) in media"
 					:key="medium.src"
 					class="column is-half-mobile is-one-quarter-fullhd"
 				>
@@ -14,7 +19,12 @@
 						itemscope
 						itemtype="http://schema.org/ImageObject"
 					>
-						<a :href="medium.src" itemprop="contentUrl" data-size="600x400">
+						<a
+							:href="medium.src"
+							itemprop="contentUrl"
+							data-size="600x400"
+							@click.prevent="onClickImage(index, $event)"
+						>
 							<img :src="medium.src" itemprop="thumbnail">
 						</a>
 					</figure>
@@ -77,20 +87,29 @@ export default {
 		};
 	},
 	async mounted() {
-		const pswpElement = this.$refs.pswp;
 		const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/twitter?apikey=${this.apikey}`);
 		const data = await res.json();
 
 		this.media = data.media;
 		this.entry = data.entry;
-
-		const options = {
-			index: 0,
-		};
-
-		// Initializes and opens PhotoSwipe
-		const gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, data.media, options);
-		gallery.init();
+	},
+	methods: {
+		onClickImage(index, event) {
+			const parentElement = event.target.closest('.photoswipe-gallery');
+			const gallery = new PhotoSwipe(this.$refs.pswp, PhotoSwipeUI_Default, this.media, {
+				index,
+				galleryUID: 'pswp',
+				getThumbBoundsFn: (i) => {
+					const rect = parentElement.children[i].querySelector('img').getBoundingClientRect();
+					return {
+						x: rect.left,
+						y: rect.top + window.pageYOffset,
+						w: rect.width,
+					};
+				},
+			});
+			gallery.init();
+		},
 	},
 };
 </script>
