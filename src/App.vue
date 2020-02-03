@@ -1,6 +1,6 @@
 <template>
 	<section class="section">
-		<div class="container">
+		<div class="container is-fluid">
 			<h1>{{entry.text}}</h1>
 			<div class="columns is-mobile is-multiline" itemscope itemtype="http://schema.org/ImageGallery">
 				<div
