@@ -66,34 +66,20 @@ export default {
 	data () {
 		return {
 			msg: 'Welcome to Your Vue.js App!!',
+			apikey: localStorage.getItem('HAKATASHI_API_KEY'),
 		};
 	},
-	mounted() {
+	async mounted() {
 		const pswpElement = this.$refs.pswp;
+		const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/twitter?apikey=${this.apikey}`);
+		const data = await res.json();
 
-		// build items array
-		const items = [
-			{
-				src: 'https://placekitten.com/600/400',
-				w: 600,
-				h: 400,
-			},
-			{
-				src: 'https://placekitten.com/1200/900',
-				w: 1200,
-				h: 900,
-			},
-		];
-
-		// define options (if needed)
 		const options = {
-			// optionName: 'option value'
-			// for example:
-			index: 0, // start at first slide
+			index: 0,
 		};
 
 		// Initializes and opens PhotoSwipe
-		const gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, items, options);
+		const gallery = new PhotoSwipe(pswpElement, PhotoSwipeUI_Default, data.media, options);
 		gallery.init();
 	},
 };

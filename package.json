@@ -11,6 +11,7 @@
     "deploy": "git checkout gh-pages && git merge master && npm run build && git add . && git commit -m \"Update build\" && git push"
   },
   "dependencies": {
+    "@babel/runtime": "^7.8.4",
     "vue": "^2.6.11"
   },
   "browserslist": [
@@ -24,6 +25,7 @@
     "@babel/plugin-proposal-json-strings": "^7.0.0",
     "@babel/plugin-syntax-dynamic-import": "^7.0.0",
     "@babel/plugin-syntax-import-meta": "^7.0.0",
+    "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/preset-env": "^7.0.0",
     "@hakatashi/eslint-config": "^1.12.0",
     "babel-loader": "^8.0.6",
