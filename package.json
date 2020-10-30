@@ -11,7 +11,7 @@
     "deploy": "git checkout gh-pages && git merge master && npm run build && git add . && git commit -m \"Update build\" && git push"
   },
   "dependencies": {
-    "@babel/runtime": "^7.8.4",
+    "@babel/runtime": "^7.11.2",
     "vue": "^2.6.11"
   },
   "browserslist": [
