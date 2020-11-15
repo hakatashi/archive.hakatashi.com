@@ -117,7 +117,6 @@ export default {
 	name: 'App',
 	data () {
 		return {
-			msg: 'Welcome to Your Vue.js App!!',
 			apikey: localStorage.getItem('HAKATASHI_API_KEY'),
 			media: [],
 			entry: {
