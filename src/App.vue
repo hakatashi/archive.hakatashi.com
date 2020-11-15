@@ -109,9 +109,19 @@
 			</div>
 		</section>
 		<footer class="float-menu">
-			<button type="button" class="button is-large is-fullwidth" @click="onClickReload">
-				Reload
-			</button>
+			<p>
+				<button type="button" class="button is-small" @click="onClickStockNijisearch">
+					<span v-if="isStockCompleted" class="icon has-text-success">
+						<i class="fas fa-check"/>
+					</span>
+					<span>Stock in Nijisearch</span>
+				</button>
+			</p>
+			<p>
+				<button type="button" class="button is-large is-fullwidth" @click="onClickReload">
+					Reload
+				</button>
+			</p>
 		</footer>
 	</div>
 </template>
@@ -129,6 +139,7 @@ export default {
 			entry: {
 				user: {},
 			},
+			isStockCompleted: false,
 		};
 	},
 	watch: {
@@ -157,6 +168,16 @@ export default {
 			});
 			gallery.init();
 		},
+		onClickStockNijisearch () {
+			const iframe = document.createElement('iframe');
+			iframe.src = `https://nijisearch.kivantium.net/status/${this.entry.id_str}/`;
+			iframe.classList.add('nanoframe');
+			iframe.addEventListener('load', () => {
+				document.body.removeChild(iframe);
+				this.isStockCompleted = true;
+			});
+			document.body.appendChild(iframe);
+		},
 		onClickReload() {
 			this.loadMedia();
 		},
@@ -166,6 +187,7 @@ export default {
 
 			this.media = data.media;
 			this.entry = data.entry;
+			this.isStockCompleted = false;
 		},
 		getDateText(input) {
 			const date = new Date(input);
@@ -202,6 +224,7 @@ html, body, .app {
 
 .float-menu {
 	flex: 0 0 5rem;
+	text-align: center;
 }
 
 .image img {
@@ -214,5 +237,12 @@ html, body, .app {
 
 .profile a {
 	color: inherit;
+}
+
+.nanoframe {
+	width: 1px;
+	height: 1px;
+	position: absolute;
+	visibility: hidden;
 }
 </style>
