@@ -11,11 +11,11 @@
 					<div class="media-content">
 						<div class="profile content">
 							<p>
-								<a :href="`https://twitter.com/${entry.user.screen_name}`" target="_blank" rel="noopener">
+								<a :href="`https://twitter.com/${entry.user.screen_name}`" target="_blank" rel="noopener noreferrer">
 									<strong>{{entry.user.name}}</strong>
 									<small>@{{entry.user.screen_name}}</small>
 								</a>
-								<a :href="`https://twitter.com/${entry.user.screen_name}/status/${entry.id_str}`" target="_blank" rel="noopener">
+								<a :href="`https://twitter.com/${entry.user.screen_name}/status/${entry.id_str}`" target="_blank" rel="noopener noreferrer">
 									<small>{{getDateText(entry.created_at)}}</small>
 								</a>
 								<br>
