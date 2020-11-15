@@ -80,6 +80,7 @@ module.exports = {
 		noInfo: true,
 		overlay: true,
 		open: true,
+		hot: true,
 	},
 	performance: {
 		hints: false,
