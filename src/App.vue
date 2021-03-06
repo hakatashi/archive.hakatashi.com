@@ -5,24 +5,24 @@
 				<article class="media">
 					<figure class="media-left">
 						<p class="image is-64x64">
-							<img :src="entry.user.profile_image_url_https">
+							<img :src="profileImage">
 						</p>
 					</figure>
 					<div class="media-content">
 						<div class="profile content">
 							<p>
-								<a :href="`https://twitter.com/${entry.user.screen_name}`" target="_blank" rel="noopener noreferrer">
-									<strong>{{entry.user.name}}</strong>
-									<small>@{{entry.user.screen_name}}</small>
+								<a :href="userUrl" target="_blank" rel="noopener noreferrer">
+									<strong>{{userName}}</strong>
+									<small>@{{userId}}</small>
 								</a>
-								<a :href="`https://twitter.com/${entry.user.screen_name}/status/${entry.id_str}`" target="_blank" rel="noopener noreferrer">
-									<small>{{getDateText(entry.created_at)}}</small>
+								<a :href="entryUrl" target="_blank" rel="noopener noreferrer">
+									<small>{{getDateText(date)}}</small>
 								</a>
 								<br>
-								<span :style="{whiteSpace: 'pre-line'}">{{entry.text}}</span>
+								<span :style="{whiteSpace: 'pre-line'}">{{description}}</span>
 							</p>
 						</div>
-						<nav class="level is-mobile">
+						<nav v-if="mode === 'twitter'" class="level is-mobile">
 							<div class="level-left">
 								<a class="level-item">
 									<span class="icon is-small"><i class="fas fa-retweet"/></span> {{entry.retweet_count}}
@@ -43,7 +43,7 @@
 					<div
 						v-for="(medium, index) in media"
 						:key="medium.src"
-						class="column is-half-mobile is-one-quarter-fullhd"
+						class="column is-half-mobile is-one-third-tablet is-one-quarter-fullhd"
 					>
 						<figure
 							class="image is-3by4"
@@ -116,6 +116,15 @@
 					</span>
 					<span>Stock in Nijisearch</span>
 				</button>
+				<button v-if="mode === 'twitter'" type="button" class="button is-small" @click="onClickToggleMode('pixiv', 'public')">
+					Switch to pixiv (public) mode
+				</button>
+				<button v-if="mode === 'pixiv' && visibility === 'public'" type="button" class="button is-small" @click="onClickToggleMode('pixiv', 'private')">
+					Switch to pixiv (private) mode
+				</button>
+				<button v-if="mode === 'pixiv' && visibility === 'private'" type="button" class="button is-small" @click="onClickToggleMode('twitter', null)">
+					Switch to Twitter mode
+				</button>
 			</p>
 			<p>
 				<button type="button" class="button is-large is-fullwidth" @click="onClickReload">
@@ -129,12 +138,15 @@
 <script>
 import PhotoSwipe from 'photoswipe';
 import PhotoSwipeUI_Default from 'photoswipe/dist/photoswipe-ui-default.js';
+import get from 'lodash/get';
 
 export default {
 	name: 'App',
 	data () {
 		return {
 			apikey: localStorage.getItem('HAKATASHI_API_KEY'),
+			mode: 'twitter',
+			visibility: null,
 			media: [],
 			entry: {
 				user: {},
@@ -148,24 +160,69 @@ export default {
 		},
 	},
 	mounted() {
-		this.loadMedia();
+		this.loadMedia(this.mode, this.visibility);
+	},
+	computed: {
+		profileImage() { return this.entryObject.profileImage; },
+		userId() { return this.entryObject.userId; },
+		userName() { return this.entryObject.userName; },
+		userUrl() { return this.entryObject.userUrl; },
+		entryUrl() { return this.entryObject.entryUrl; },
+		description() { return this.entryObject.description; },
+		date() { return this.entryObject.date; },
+		entryObject() {
+			if (this.mode === 'twitter') {
+				return {
+					profileImage: this.entry.user.profile_image_url_https,
+					userId: this.entry.user.screen_name,
+					userName: this.entry.user.name,
+					userUrl: `https://twitter.com/${this.entry.user.screen_name}`,
+					entryUrl: `https://twitter.com/${this.entry.user.screen_name}/status/${this.entry.id_str}`,
+					description: this.entry.text,
+					date: this.entry.created_at,
+				};
+			} else if (this.mode === 'pixiv') {
+				const [, , , , , , , year, month, date, hour, minute, second] = this.entry.url.split('/').map((c) => parseInt(c));
+				return {
+					profileImage: this.entry.profileImageUrl.replace(/pximg\.net/, 'pixiv.cat'),
+					userId: this.entry.userId,
+					userName: this.entry.userName,
+					userUrl: `https://www.pixiv.net/users/${this.entry.userId}`,
+					entryUrl: `https://www.pixiv.net/artworks/${this.entry.id}`,
+					description: this.entry.description || '',
+					date: new Date(year, month - 1, date, hour, minute, second).toUTCString(),
+				};
+			}
+
+			return {};
+		},
 	},
 	methods: {
 		onClickImage(index, event) {
 			const parentElement = event.target.closest('.photoswipe-gallery');
-			const gallery = new PhotoSwipe(this.$refs.pswp, PhotoSwipeUI_Default, this.media, {
-				index,
-				getThumbBoundsFn: (i) => {
-					const rect = parentElement.children[i].querySelector('img').getBoundingClientRect();
-					const medium = this.media[i];
-					const zoom = Math.max(rect.width / medium.w, rect.height / medium.h);
-					return {
-						x: rect.left + (rect.width - medium.w * zoom) / 2,
-						y: rect.top + (rect.height - medium.h * zoom) / 2 + window.pageYOffset,
-						w: medium.w * zoom,
-					};
-				},
+			const imageSizes = Array.from(parentElement.children).map((el) => {
+				const imgEl = el.querySelector('img');
+				return {width: imgEl.naturalWidth, height: imgEl.naturalHeight};
 			});
+			const gallery = new PhotoSwipe(
+				this.$refs.pswp,
+				PhotoSwipeUI_Default,
+				this.media.map(({src}, i) => ({src, w: imageSizes[i].width, h: imageSizes[i].height})),
+				{
+					index,
+					getThumbBoundsFn: (i) => {
+						const imgEl = parentElement.children[i].querySelector('img');
+						const rect = imgEl.getBoundingClientRect();
+						const imageSize = imageSizes[i];
+						const zoom = Math.max(rect.width / imageSize.width, rect.height / imageSize.height);
+						return {
+							x: rect.left + (rect.width - imageSize.width * zoom) / 2,
+							y: rect.top + (rect.height - imageSize.height * zoom) / 2 + window.pageYOffset,
+							w: imageSize.width * zoom,
+						};
+					},
+				},
+			);
 			gallery.init();
 		},
 		onClickStockNijisearch () {
@@ -179,15 +236,20 @@ export default {
 			document.body.appendChild(iframe);
 		},
 		onClickReload() {
-			this.loadMedia();
+			this.loadMedia(this.mode, this.visibility);
 		},
-		async loadMedia() {
-			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/twitter?apikey=${this.apikey}`);
+		onClickToggleMode(mode, visibility) {
+			this.loadMedia(mode, visibility);
+		},
+		async loadMedia(mode, visibility) {
+			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/${mode}?apikey=${this.apikey}&visibility=${visibility}`);
 			const data = await res.json();
 
 			this.media = data.media;
 			this.entry = data.entry;
 			this.isStockCompleted = false;
+			this.mode = mode;
+			this.visibility = visibility;
 		},
 		getDateText(input) {
 			const date = new Date(input);
