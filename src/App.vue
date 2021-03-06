@@ -189,7 +189,7 @@ export default {
 					userName: this.entry.userName,
 					userUrl: `https://www.pixiv.net/users/${this.entry.userId}`,
 					entryUrl: `https://www.pixiv.net/artworks/${this.entry.id}`,
-					description: this.entry.description || '',
+					description: `${this.entry.title || ''} ${this.entry.tags.map((t) => `#${t}`).join(' ')}`,
 					date: new Date(year, month - 1, date, hour, minute, second).toUTCString(),
 				};
 			}
