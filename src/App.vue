@@ -35,14 +35,31 @@
 					</div>
 				</article>
 
+				<vue-justified-layout v-if="mode === 'twitter'" :items="media" v-slot="{item, index}" :options="{targetRowHeight: 600}" class="gallery">
+					<figure
+						class="image"
+						itemprop="associatedMedia"
+						itemscope
+						itemtype="http://schema.org/ImageObject"
+					>
+						<a
+							:href="item.url"
+							itemprop="contentUrl"
+							@click.prevent="onClickImage(index, $event)"
+						>
+							<img :src="item.url" itemprop="thumbnail">
+						</a>
+					</figure>
+				</vue-justified-layout>
 				<div
-					class="photoswipe-gallery columns is-mobile is-multiline"
+					v-else
+					class="gallery columns is-mobile is-multiline"
 					itemscope
 					itemtype="http://schema.org/ImageGallery"
 				>
 					<div
 						v-for="(medium, index) in media"
-						:key="medium.src"
+						:key="medium.url"
 						class="column is-half-mobile is-one-third-tablet is-one-quarter-fullhd"
 					>
 						<figure
@@ -52,11 +69,11 @@
 							itemtype="http://schema.org/ImageObject"
 						>
 							<a
-								:href="medium.src"
+								:href="medium.url"
 								itemprop="contentUrl"
 								@click.prevent="onClickImage(index, $event)"
 							>
-								<img :src="medium.src" itemprop="thumbnail">
+								<img :src="medium.url" itemprop="thumbnail">
 							</a>
 						</figure>
 					</div>
@@ -138,10 +155,11 @@
 <script>
 import PhotoSwipe from 'photoswipe';
 import PhotoSwipeUI_Default from 'photoswipe/dist/photoswipe-ui-default.js';
-import get from 'lodash/get';
+import {VueJustifiedLayout} from 'vue-justified-layout';
 
 export default {
 	name: 'App',
+	components: {VueJustifiedLayout},
 	data () {
 		return {
 			apikey: localStorage.getItem('HAKATASHI_API_KEY'),
@@ -199,15 +217,16 @@ export default {
 	},
 	methods: {
 		onClickImage(index, event) {
-			const parentElement = event.target.closest('.photoswipe-gallery');
+			const parentElement = event.target.closest('.gallery');
 			const imageSizes = Array.from(parentElement.children).map((el) => {
 				const imgEl = el.querySelector('img');
 				return {width: imgEl.naturalWidth, height: imgEl.naturalHeight};
 			});
+			console.log(imageSizes);
 			const gallery = new PhotoSwipe(
 				this.$refs.pswp,
 				PhotoSwipeUI_Default,
-				this.media.map(({src}, i) => ({src, w: imageSizes[i].width, h: imageSizes[i].height})),
+				this.media.map(({url}, i) => ({src: url, w: imageSizes[i].width, h: imageSizes[i].height})),
 				{
 					index,
 					getThumbBoundsFn: (i) => {
@@ -245,7 +264,7 @@ export default {
 			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/${mode}?apikey=${this.apikey}&visibility=${visibility}`);
 			const data = await res.json();
 
-			this.media = data.media;
+			this.media = data.media.map(({w, h, src}) => ({width: w, height: h, url: src}));
 			this.entry = data.entry;
 			this.isStockCompleted = false;
 			this.mode = mode;

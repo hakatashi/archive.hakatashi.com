@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.14.0",
-    "vue": "^2.6.12"
+    "vue": "^2.6.12",
+    "vue-justified-layout": "^0.2.0"
   },
   "browserslist": [
     "> 1%",
