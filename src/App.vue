@@ -148,7 +148,7 @@
 <script>
 import PhotoSwipe from 'photoswipe';
 import PhotoSwipeUI_Default from 'photoswipe/dist/photoswipe-ui-default.js';
-import {VueJustifiedLayout} from 'vue-justified-layout';
+import VueJustifiedLayout from './components/JustifiedLayout.vue';
 
 export default {
 	name: 'App',
@@ -295,7 +295,7 @@ export default {
 @import "../node_modules/photoswipe/dist/photoswipe.css";
 @import "../node_modules/photoswipe/dist/default-skin/default-skin.css";
 
-html, body, .app {
+html, body, #app, .app {
 	width: 100%;
 	height: 100%;
 }
