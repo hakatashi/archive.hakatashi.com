@@ -36,7 +36,6 @@
 				</article>
 
 				<vue-justified-layout
-					v-if="mode === 'twitter'"
 					v-slot="{item, index}"
 					:items="media"
 					:options="{targetRowHeight: 600}"
@@ -57,33 +56,6 @@
 						</a>
 					</figure>
 				</vue-justified-layout>
-				<div
-					v-else
-					class="gallery columns is-mobile is-multiline"
-					itemscope
-					itemtype="http://schema.org/ImageGallery"
-				>
-					<div
-						v-for="(medium, index) in media"
-						:key="medium.url"
-						class="column is-half-mobile is-one-third-tablet is-one-quarter-fullhd"
-					>
-						<figure
-							class="image is-3by4"
-							itemprop="associatedMedia"
-							itemscope
-							itemtype="http://schema.org/ImageObject"
-						>
-							<a
-								:href="medium.url"
-								itemprop="contentUrl"
-								@click.prevent="onClickImage(index, $event)"
-							>
-								<img :src="medium.url" itemprop="thumbnail">
-							</a>
-						</figure>
-					</div>
-				</div>
 
 				<input
 					v-model="apikey"
