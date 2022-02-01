@@ -35,7 +35,12 @@
 					</div>
 				</article>
 
-				<vue-justified-layout v-if="mode === 'twitter'" :items="media" v-slot="{item, index}" :options="{targetRowHeight: 600}" class="gallery">
+				<vue-justified-layout
+					v-slot="{item, index}"
+					:items="media"
+					:options="{targetRowHeight: 600}"
+					class="gallery"
+				>
 					<figure
 						class="image"
 						itemprop="associatedMedia"
@@ -51,33 +56,6 @@
 						</a>
 					</figure>
 				</vue-justified-layout>
-				<div
-					v-else
-					class="gallery columns is-mobile is-multiline"
-					itemscope
-					itemtype="http://schema.org/ImageGallery"
-				>
-					<div
-						v-for="(medium, index) in media"
-						:key="medium.url"
-						class="column is-half-mobile is-one-third-tablet is-one-quarter-fullhd"
-					>
-						<figure
-							class="image is-3by4"
-							itemprop="associatedMedia"
-							itemscope
-							itemtype="http://schema.org/ImageObject"
-						>
-							<a
-								:href="medium.url"
-								itemprop="contentUrl"
-								@click.prevent="onClickImage(index, $event)"
-							>
-								<img :src="medium.url" itemprop="thumbnail">
-							</a>
-						</figure>
-					</div>
-				</div>
 
 				<input
 					v-model="apikey"
@@ -133,13 +111,28 @@
 					</span>
 					<span>Stock in Nijisearch</span>
 				</button>
-				<button v-if="mode === 'twitter'" type="button" class="button is-small" @click="onClickToggleMode('pixiv', 'public')">
+				<button
+					v-if="mode === 'twitter'"
+					type="button"
+					class="button is-small"
+					@click="onClickToggleMode('pixiv', 'public')"
+				>
 					Switch to pixiv (public) mode
 				</button>
-				<button v-if="mode === 'pixiv' && visibility === 'public'" type="button" class="button is-small" @click="onClickToggleMode('pixiv', 'private')">
+				<button
+					v-if="mode === 'pixiv' && visibility === 'public'"
+					type="button"
+					class="button is-small"
+					@click="onClickToggleMode('pixiv', 'private')"
+				>
 					Switch to pixiv (private) mode
 				</button>
-				<button v-if="mode === 'pixiv' && visibility === 'private'" type="button" class="button is-small" @click="onClickToggleMode('twitter', null)">
+				<button
+					v-if="mode === 'pixiv' && visibility === 'private'"
+					type="button"
+					class="button is-small"
+					@click="onClickToggleMode('twitter', null)"
+				>
 					Switch to Twitter mode
 				</button>
 			</p>
@@ -155,7 +148,7 @@
 <script>
 import PhotoSwipe from 'photoswipe';
 import PhotoSwipeUI_Default from 'photoswipe/dist/photoswipe-ui-default.js';
-import {VueJustifiedLayout} from 'vue-justified-layout';
+import VueJustifiedLayout from './components/JustifiedLayout.vue';
 
 export default {
 	name: 'App',
@@ -172,22 +165,28 @@ export default {
 			isStockCompleted: false,
 		};
 	},
-	watch: {
-		apikey(newKey) {
-			localStorage.setItem('HAKATASHI_API_KEY', newKey);
-		},
-	},
-	mounted() {
-		this.loadMedia(this.mode, this.visibility);
-	},
 	computed: {
-		profileImage() { return this.entryObject.profileImage; },
-		userId() { return this.entryObject.userId; },
-		userName() { return this.entryObject.userName; },
-		userUrl() { return this.entryObject.userUrl; },
-		entryUrl() { return this.entryObject.entryUrl; },
-		description() { return this.entryObject.description; },
-		date() { return this.entryObject.date; },
+		profileImage() {
+			return this.entryObject.profileImage;
+		},
+		userId() {
+			return this.entryObject.userId;
+		},
+		userName() {
+			return this.entryObject.userName;
+		},
+		userUrl() {
+			return this.entryObject.userUrl;
+		},
+		entryUrl() {
+			return this.entryObject.entryUrl;
+		},
+		description() {
+			return this.entryObject.description;
+		},
+		date() {
+			return this.entryObject.date;
+		},
 		entryObject() {
 			if (this.mode === 'twitter') {
 				return {
@@ -214,6 +213,14 @@ export default {
 
 			return {};
 		},
+	},
+	watch: {
+		apikey(newKey) {
+			localStorage.setItem('HAKATASHI_API_KEY', newKey);
+		},
+	},
+	mounted() {
+		this.loadMedia(this.mode, this.visibility);
 	},
 	methods: {
 		onClickImage(index, event) {
@@ -288,7 +295,7 @@ export default {
 @import "../node_modules/photoswipe/dist/photoswipe.css";
 @import "../node_modules/photoswipe/dist/default-skin/default-skin.css";
 
-html, body, .app {
+html, body, #app, .app {
 	width: 100%;
 	height: 100%;
 }

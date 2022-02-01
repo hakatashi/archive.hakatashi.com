@@ -1,4 +1,4 @@
-const VueLoaderPlugin = require('vue-loader/lib/plugin');
+const {VueLoaderPlugin} = require('vue-loader');
 const webpack = require('webpack');
 
 module.exports = {
@@ -67,12 +67,6 @@ module.exports = {
 				},
 			},
 		],
-	},
-	resolve: {
-		alias: {
-			vue$: 'vue/dist/vue.esm.js',
-		},
-		extensions: ['*', '.js', '.vue', '.json'],
 	},
 	devServer: {
 		historyApiFallback: true,

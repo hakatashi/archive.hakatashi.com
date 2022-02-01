@@ -1,10 +1,4 @@
-import Vue from 'vue';
+import {createApp} from 'vue';
 import App from './App.vue';
-import {VueJustifiedLayout} from 'vue-justified-layout';
 
-Vue.use(VueJustifiedLayout);
-
-new Vue({
-	el: '#app',
-	render: (h) => h(App),
-});
+createApp(App).mount('#app');
