@@ -1,6 +1,6 @@
 import Vue from 'vue';
-import App from './App.vue';
 import {VueJustifiedLayout} from 'vue-justified-layout';
+import App from './App.vue';
 
 Vue.use(VueJustifiedLayout);
 
