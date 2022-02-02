@@ -38,7 +38,7 @@
 				<vue-justified-layout
 					v-slot="{item, index}"
 					:items="media"
-					:options="{targetRowHeight: 600}"
+					:options="{targetRowHeight: desiredHeight}"
 					class="gallery"
 				>
 					<figure
@@ -186,6 +186,16 @@ export default {
 		},
 		date() {
 			return this.entryObject.date;
+		},
+		desiredHeight() {
+			if (this.media.length === 0) {
+				return 500;
+			}
+			const ratios = this.media.map((cur) => Math.min(cur.height / cur.width, 4));
+			const averageRatio = ratios.reduce((a, b) => a + b) / ratios.length;
+			console.log(ratios);
+			console.log(averageRatio);
+			return Math.max(500 * averageRatio, 600);
 		},
 		entryObject() {
 			if (this.mode === 'twitter') {
