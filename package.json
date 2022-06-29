@@ -13,7 +13,7 @@
   "dependencies": {
     "@babel/runtime": "^7.18.3",
     "justified-layout": "^4.1.0",
-    "vue": "^3.2.35",
+    "vue": "^3.2.37",
     "vue-justified-layout": "^0.2.0"
   },
   "browserslist": [
