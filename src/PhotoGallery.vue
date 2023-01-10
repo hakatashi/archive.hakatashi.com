@@ -25,7 +25,7 @@
 				<infinite-loading v-if="!isLoading" @infinite="onInfinite"/>
 			</div>
 		</div>
-		<div v-if="selectedPhoto !== null" class="modal" @click="selectedPhoto = null">
+		<div v-if="selectedPhoto !== null" class="photo-modal" @click="selectedPhoto = null">
 			<div class="modal-mask">
 				<div class="modal-wrapper">
 					<img class="modal-image" :src="selectedPhoto.src">
@@ -154,7 +154,7 @@ export default {
 	}
 }
 
-.modal {
+.photo-modal {
 	cursor: pointer;
 }
 
