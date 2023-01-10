@@ -6,12 +6,13 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack serve",
+    "dev": "cross-env NODE_ENV=development webpack --progress --watch",
     "build": "cross-env NODE_ENV=production webpack --progress",
     "deploy": "git switch gh-pages && git merge master && npm run build && git add . && git commit -m \"Update build\" && git push && git switch master"
   },
   "dependencies": {
     "@babel/runtime": "^7.19.4",
+    "bulma": "^0.9.4",
     "justified-layout": "^4.1.0",
     "vue": "^3.2.39",
     "vue-justified-layout": "^0.2.0"
@@ -39,7 +40,7 @@
     "lodash": "^4.17.21",
     "node-sass": "^8.0.0",
     "photoswipe": "^4.1.3",
-    "sass-loader": "^12.4.0",
+    "sass-loader": "^13.2.0",
     "vue-loader": "^17.0.0",
     "vue-style-loader": "^4.1.3",
     "webpack": "^5.68.0",
