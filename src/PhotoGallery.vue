@@ -12,12 +12,24 @@
 			<div class="photo-container">
 				<div v-for="row, index in photoLayout" :key="index" class="photo-row">
 					<div v-for="photo in row" :key="photo.src" class="photo">
-						<img :src="photo.src" :style="{width: `${photo.renderWidth}px`, height: `${photo.renderHeight}px`}">
+						<img
+							:src="photo.src"
+							:style="{
+								width: `${photo.renderWidth}px`,
+								height: `${photo.renderHeight}px`,
+							}"
+							@click="selectedPhoto = photo"
+						>
 					</div>
 				</div>
-				<infinite-loading v-if="!isLoading" @infinite="onInfinite">
-					hoge
-				</infinite-loading>
+				<infinite-loading v-if="!isLoading" @infinite="onInfinite"/>
+			</div>
+		</div>
+		<div v-if="selectedPhoto !== null" class="modal" @click="selectedPhoto = null">
+			<div class="modal-mask">
+				<div class="modal-wrapper">
+					<img class="modal-image" :src="selectedPhoto.src">
+				</div>
 			</div>
 		</div>
 	</div>
@@ -43,6 +55,7 @@ export default {
 			photoLayout: [],
 			windowWidth: document.body.clientWidth,
 			isLoading: false,
+			selectedPhoto: null,
 		};
 	},
 	watch: {
@@ -130,6 +143,7 @@ export default {
 			height: 20rem;
 			object-fit: cover;
 			vertical-align: bottom;
+			cursor: pointer;
 		}
 
 		.photo {
@@ -138,6 +152,33 @@ export default {
 			}
 		}
 	}
+}
+
+.modal {
+	cursor: pointer;
+}
+
+.modal-mask {
+	position: fixed;
+	z-index: 9998;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: black;
+	display: table;
+	transition: opacity 0.3s ease;
+}
+
+.modal-wrapper {
+	display: table-cell;
+	vertical-align: middle;
+}
+
+.modal-image {
+	width: 100vw;
+	height: 100vh;
+	object-fit: contain;
 }
 </style>
 
