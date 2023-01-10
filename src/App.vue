@@ -21,7 +21,7 @@ export default {
 	components: {AppV1, PhotoGallery},
 	data() {
 		return {
-			app: 'pixiv',
+			app: null,
 		};
 	},
 };
