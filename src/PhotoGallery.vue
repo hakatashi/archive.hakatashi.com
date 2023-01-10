@@ -15,16 +15,21 @@
 						<img :src="photo.src" :style="{width: `${photo.renderWidth}px`, height: `${photo.renderHeight}px`}">
 					</div>
 				</div>
+				<infinite-loading v-if="!isLoading" @infinite="onInfinite">
+					hoge
+				</infinite-loading>
 			</div>
 		</div>
 	</div>
 </template>
 
 <script>
+import InfiniteLoading from 'vue-infinite-loading';
 import calculateLayout from './lib/calculateLayout.js';
 
 export default {
 	name: 'PhotoGallery',
+	components: {InfiniteLoading},
 	props: {
 		mode: {
 			type: String,
@@ -37,6 +42,7 @@ export default {
 			photos: [],
 			photoLayout: [],
 			windowWidth: document.body.clientWidth,
+			isLoading: false,
 		};
 	},
 	watch: {
@@ -50,20 +56,30 @@ export default {
 	mounted() {
 		window.addEventListener('resize', this.updateDimensions);
 
-		this.loadMedia(this.mode, 'private').then(() => {
-			this.updateLayout(this.windowWidth);
-		});
+		this.loadMedia(this.mode, 'private');
 	},
 	unmounted() {
 		window.removeEventListener('resize', this.updateDimensions);
 	},
 	methods: {
 		async loadMedia(mode, visibility) {
+			if (this.isLoading) {
+				return;
+			}
+
+			this.isLoading = true;
+
 			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/${mode}?apikey=${this.apikey}&visibility=${visibility}&count=3`);
 			const data = await res.json();
 
-			this.photos = data.media.map(({w, h, src}) => ({width: w, height: h, src}));
-			this.photos.sort((a, b) => a.src.localeCompare(b.src));
+			const newPhotos = data.media.map(({w, h, src}) => ({width: w, height: h, src}));
+			newPhotos.sort((a, b) => a.src.localeCompare(b.src));
+			this.photos.push(...newPhotos);
+			this.updateLayout(this.windowWidth);
+
+			await new Promise((resolve) => setTimeout(resolve, 2000));
+
+			this.isLoading = false;
 		},
 		updateLayout(targetWidth) {
 			this.photoLayout = calculateLayout({
@@ -74,10 +90,17 @@ export default {
 				portraitRatioLimit: 3,
 				landscapeRatioLimit: 2,
 			});
-			console.log(this.photoLayout);
 		},
 		updateDimensions() {
 			this.windowWidth = document.body.clientWidth;
+		},
+		async onInfinite($state) {
+			if (this.isLoading) {
+				return;
+			}
+			console.log('onInfinite');
+			await this.loadMedia(this.mode, 'private');
+			$state.loaded();
 		},
 	},
 };
