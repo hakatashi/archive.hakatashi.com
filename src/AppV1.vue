@@ -151,7 +151,7 @@ import PhotoSwipeUI_Default from 'photoswipe/dist/photoswipe-ui-default.js';
 import VueJustifiedLayout from './components/JustifiedLayout.vue';
 
 export default {
-	name: 'App',
+	name: 'AppV1',
 	components: {VueJustifiedLayout},
 	data () {
 		return {
@@ -193,8 +193,6 @@ export default {
 			}
 			const ratios = this.media.map((cur) => Math.min(cur.height / cur.width, 4));
 			const averageRatio = ratios.reduce((a, b) => a + b) / ratios.length;
-			console.log(ratios);
-			console.log(averageRatio);
 			return Math.max(500 * averageRatio, 600);
 		},
 		entryObject() {
