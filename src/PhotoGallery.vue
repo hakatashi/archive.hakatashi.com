@@ -47,6 +47,10 @@ export default {
 			type: String,
 			required: true,
 		},
+		visibility: {
+			type: String,
+			required: true,
+		},
 	},
 	data() {
 		return {
@@ -69,7 +73,7 @@ export default {
 	mounted() {
 		window.addEventListener('resize', this.updateDimensions);
 
-		this.loadMedia(this.mode, 'private');
+		this.loadMedia(this.mode, this.visibility);
 	},
 	unmounted() {
 		window.removeEventListener('resize', this.updateDimensions);
@@ -112,7 +116,7 @@ export default {
 				return;
 			}
 			console.log('onInfinite');
-			await this.loadMedia(this.mode, 'private');
+			await this.loadMedia(this.mode, this.visibility);
 			$state.loaded();
 		},
 	},
