@@ -25,7 +25,7 @@
 				<infinite-loading v-if="!isLoading" @infinite="onInfinite"/>
 			</div>
 		</div>
-		<div v-if="selectedPhoto !== null" class="modal" @click="selectedPhoto = null">
+		<div v-if="selectedPhoto !== null" class="photo-modal" @click="selectedPhoto = null">
 			<div class="modal-mask">
 				<div class="modal-wrapper">
 					<img class="modal-image" :src="selectedPhoto.src">
@@ -44,6 +44,10 @@ export default {
 	components: {InfiniteLoading},
 	props: {
 		mode: {
+			type: String,
+			required: true,
+		},
+		visibility: {
 			type: String,
 			required: true,
 		},
@@ -69,7 +73,7 @@ export default {
 	mounted() {
 		window.addEventListener('resize', this.updateDimensions);
 
-		this.loadMedia(this.mode, 'private');
+		this.loadMedia(this.mode, this.visibility);
 	},
 	unmounted() {
 		window.removeEventListener('resize', this.updateDimensions);
@@ -112,7 +116,7 @@ export default {
 				return;
 			}
 			console.log('onInfinite');
-			await this.loadMedia(this.mode, 'private');
+			await this.loadMedia(this.mode, this.visibility);
 			$state.loaded();
 		},
 	},
@@ -154,7 +158,7 @@ export default {
 	}
 }
 
-.modal {
+.photo-modal {
 	cursor: pointer;
 }
 

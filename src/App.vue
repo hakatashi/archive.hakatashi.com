@@ -1,12 +1,14 @@
 <template>
 	<div class="app-selector">
 		<app-v-1 v-if="app === 'v1'"/>
-		<photo-gallery v-if="app === 'pixiv'" mode="pixiv"/>
+		<photo-gallery v-if="app === 'pixiv-public'" mode="pixiv" visibility="public"/>
+		<photo-gallery v-if="app === 'pixiv-private'" mode="pixiv" visibility="private"/>
 		<div v-else>
 			<h1 class="title">HakataArchiver</h1>
 			<ul class="switcher">
 				<li class="app-select" @click="app = 'v1'">V1⏳</li>
-				<li class="app-select" @click="app = 'pixiv'">pixiv🅿️</li>
+				<li class="app-select" @click="app = 'pixiv-public'">pixiv public🅿️</li>
+				<li class="app-select" @click="app = 'pixiv-private'">pixiv private🅿️</li>
 			</ul>
 		</div>
 	</div>
