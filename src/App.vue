@@ -1,10 +1,12 @@
 <template>
 	<div class="app-selector">
 		<app-v-1 v-if="app === 'v1'"/>
+		<photo-gallery v-if="app === 'pixiv'" mode="pixiv"/>
 		<div v-else>
 			<h1 class="title">HakataArchiver</h1>
 			<ul class="switcher">
 				<li class="app-select" @click="app = 'v1'">V1⏳</li>
+				<li class="app-select" @click="app = 'pixiv'">pixiv🅿️</li>
 			</ul>
 		</div>
 	</div>
@@ -12,13 +14,14 @@
 
 <script>
 import AppV1 from './AppV1.vue';
+import PhotoGallery from './PhotoGallery.vue';
 
 export default {
 	name: 'App',
-	components: {AppV1},
+	components: {AppV1, PhotoGallery},
 	data() {
 		return {
-			app: null,
+			app: 'pixiv',
 		};
 	},
 };
@@ -45,7 +48,6 @@ html, body, #app, .app-selector {
 	flex-wrap: wrap;
 	flex-direction: row;
 	justify-content: center;
-	cursor: pointer;
 }
 
 .app-select {
@@ -60,6 +62,8 @@ html, body, #app, .app-selector {
 	align-items: center;
 	justify-content: center;
 
-	font-size: 5rem;
+	font-size: 3rem;
+
+	cursor: pointer;
 }
 </style>
