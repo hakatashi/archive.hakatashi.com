@@ -1,8 +1,8 @@
 <template>
 	<div class="app-selector">
 		<app-v-1 v-if="app === 'v1'"/>
-		<photo-gallery v-if="app === 'pixiv-public'" mode="pixiv" visibility="public"/>
-		<photo-gallery v-if="app === 'pixiv-private'" mode="pixiv" visibility="private"/>
+		<photo-gallery v-else-if="app === 'pixiv-public'" mode="pixiv" visibility="public"/>
+		<photo-gallery v-else-if="app === 'pixiv-private'" mode="pixiv" visibility="private"/>
 		<div v-else>
 			<h1 class="title">HakataArchiver</h1>
 			<ul class="switcher">
