@@ -18,17 +18,23 @@
 								width: `${photo.renderWidth}px`,
 								height: `${photo.renderHeight}px`,
 							}"
-							@click="selectedPhoto = photo"
+							@click="selectedPhotoIndex = photo.index"
 						>
 					</div>
 				</div>
 				<infinite-loading v-if="!isLoading" @infinite="onInfinite"/>
 			</div>
 		</div>
-		<div v-if="selectedPhoto !== null" class="photo-modal" @click="selectedPhoto = null">
+		<div
+			v-if="selectedPhotoIndex !== null"
+			v-touch:swipe.left="onSwipeLeft"
+			v-touch:swipe.right="onSwipeRight"
+			class="photo-modal"
+			@click="selectedPhotoIndex = null"
+		>
 			<div class="modal-mask">
 				<div class="modal-wrapper">
-					<img class="modal-image" :src="selectedPhoto.src">
+					<img class="modal-image" :src="photos[selectedPhotoIndex].src">
 				</div>
 			</div>
 		</div>
@@ -78,7 +84,7 @@ export default {
 			photoLayout: [],
 			windowWidth: document.body.clientWidth,
 			isLoading: false,
-			selectedPhoto: null,
+			selectedPhotoIndex: null,
 		};
 	},
 	watch: {
@@ -110,6 +116,13 @@ export default {
 
 			const newPhotos = data.media.map(({w, h, src}) => ({width: w, height: h, src}));
 			sortPhotos(newPhotos);
+
+			let index = this.photos.length;
+			for (const photo of newPhotos) {
+				photo.index = index;
+				index++;
+			}
+
 			this.photos.push(...newPhotos);
 			this.updateLayout(this.windowWidth);
 
@@ -131,6 +144,16 @@ export default {
 		},
 		updateDimensions() {
 			this.windowWidth = document.body.clientWidth;
+		},
+		onSwipeRight() {
+			if (this.selectedPhotoIndex !== null) {
+				this.selectedPhotoIndex = Math.max(0, this.selectedPhotoIndex - 1);
+			}
+		},
+		onSwipeLeft() {
+			if (this.selectedPhotoIndex !== null) {
+				this.selectedPhotoIndex = Math.min(this.photos.length - 1, this.selectedPhotoIndex + 1);
+			}
 		},
 		async onInfinite($state) {
 			if (this.isLoading) {
@@ -172,6 +195,7 @@ export default {
 		}
 
 		.photo {
+			background-color: #DDD;
 			&:not(:first-child) {
 				margin-left: 10px;
 			}
