@@ -30,11 +30,56 @@
 			v-touch:swipe.left="onSwipeLeft"
 			v-touch:swipe.right="onSwipeRight"
 			class="photo-modal"
-			@click="selectedPhotoIndex = null"
 		>
 			<div class="modal-mask">
 				<div class="modal-wrapper">
-					<img class="modal-image" :src="photos[selectedPhotoIndex].src">
+					<img
+						class="modal-image"
+						:src="selectedPhoto.src"
+						@click="selectedPhotoIndex = null"
+					>
+					<article class="media">
+						<figure class="media-left">
+							<p class="image is-64x64">
+								<img :src="selectedEntry.profileImage">
+							</p>
+						</figure>
+						<div class="media-content">
+							<div class="profile content">
+								<p>
+									<a
+										class="media-username"
+										:href="selectedEntry.userUrl"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<strong>{{selectedEntry.userName}}</strong>
+										<small>@{{selectedEntry.userId}}</small>
+									</a>
+									<a
+										class="media-date"
+										:href="selectedEntry.entryUrl"
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<small>{{getDateText(selectedEntry.date)}}</small>
+									</a>
+									<br>
+									<span :style="{whiteSpace: 'pre-line'}">{{selectedEntry.description}}</span>
+								</p>
+							</div>
+							<nav v-if="mode === 'twitter'" class="level is-mobile">
+								<div class="level-left">
+									<a class="level-item">
+										<span class="icon is-small"><i class="fas fa-retweet"/></span> {{selectedEntry.retweet_count}}
+									</a>
+									<a class="level-item">
+										<span class="icon is-small"><i class="fas fa-heart"/></span> {{selectedEntry.favorite_count}}
+									</a>
+								</div>
+							</nav>
+						</div>
+					</article>
 				</div>
 			</div>
 		</div>
@@ -64,6 +109,35 @@ const sortPhotos = (photos) => {
 	});
 };
 
+const getEntryObject = (entry, mode) => {
+	if (mode === 'twitter') {
+		return {
+			id: '',
+			profileImage: entry.user.profile_image_url_https,
+			userId: entry.user.screen_name,
+			userName: entry.user.name,
+			userUrl: `https://twitter.com/${entry.user.screen_name}`,
+			entryUrl: `https://twitter.com/${entry.user.screen_name}/status/${entry.id_str}`,
+			description: entry.text,
+			date: entry.created_at,
+		};
+	} else if (mode === 'pixiv') {
+		const [, , , , , , , year, month, date, hour, minute, second] = entry.url.split('/').map((c) => parseInt(c));
+		return {
+			id: parseInt(entry.id),
+			profileImage: entry.profileImageUrl.replace(/pximg\.net/, 'pixiv.cat'),
+			userId: entry.userId,
+			userName: entry.userName,
+			userUrl: `https://www.pixiv.net/users/${entry.userId}`,
+			entryUrl: `https://www.pixiv.net/artworks/${entry.id}`,
+			description: `${entry.title || ''} ${entry.tags.map((t) => `#${t}`).join(' ')}`,
+			date: new Date(year, month - 1, date, hour, minute, second).toUTCString(),
+		};
+	}
+
+	return {};
+};
+
 export default {
 	name: 'PhotoGallery',
 	components: {InfiniteLoading},
@@ -82,10 +156,27 @@ export default {
 			apikey: localStorage.getItem('HAKATASHI_API_KEY'),
 			photos: [],
 			photoLayout: [],
+			entries: [],
 			windowWidth: document.body.clientWidth,
 			isLoading: false,
 			selectedPhotoIndex: null,
 		};
+	},
+	computed: {
+		selectedPhoto() {
+			if (this.selectedPhotoIndex === null) {
+				return {};
+			}
+			return this.photos[this.selectedPhotoIndex];
+		},
+		selectedEntry() {
+			if (this.selectedPhotoIndex === null) {
+				return {};
+			}
+			const [id] = getIdAndPage(this.selectedPhoto.src);
+			const selectedEntry = this.entries.find((entry) => parseInt(entry.id) === id);
+			return selectedEntry || {};
+		},
 	},
 	watch: {
 		apikey(newKey) {
@@ -124,6 +215,8 @@ export default {
 			}
 
 			this.photos.push(...newPhotos);
+			this.entries.push(...data.entries.map((entry) => getEntryObject(entry, this.mode)));
+
 			this.updateLayout(this.windowWidth);
 
 			await new Promise((resolve) => {
@@ -144,6 +237,16 @@ export default {
 		},
 		updateDimensions() {
 			this.windowWidth = document.body.clientWidth;
+		},
+		getDateText(input) {
+			const date = new Date(input);
+			const year = date.getFullYear().toString().padStart(4, '0');
+			const month = (date.getMonth() + 1).toString().padStart(2, '0');
+			const day = date.getDate().toString().padStart(2, '0');
+			const hour = date.getHours().toString().padStart(2, '0');
+			const minute = date.getMinutes().toString().padStart(2, '0');
+			const second = date.getSeconds().toString().padStart(2, '0');
+			return `${year}/${month}/${day} ${hour}:${minute}:${second}`;
 		},
 		onSwipeRight() {
 			if (this.selectedPhotoIndex !== null) {
@@ -214,20 +317,26 @@ export default {
 	left: 0;
 	width: 100%;
 	height: 100%;
-	background-color: black;
+	background: white;
 	display: table;
 	transition: opacity 0.3s ease;
 }
 
 .modal-wrapper {
-	display: table-cell;
-	vertical-align: middle;
+	width: 100vw;
+	height: 100vh;
+	overflow-y: scroll;
 }
 
 .modal-image {
-	width: 100vw;
+	width: 100%;
 	height: 100vh;
+	background-color: black;
 	object-fit: contain;
+}
+
+.media-date {
+	margin-left: 0.3em;
 }
 </style>
 
