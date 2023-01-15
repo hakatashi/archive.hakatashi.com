@@ -18,17 +18,23 @@
 								width: `${photo.renderWidth}px`,
 								height: `${photo.renderHeight}px`,
 							}"
-							@click="selectedPhoto = photo"
+							@click="selectedPhotoIndex = photo.index"
 						>
 					</div>
 				</div>
 				<infinite-loading v-if="!isLoading" @infinite="onInfinite"/>
 			</div>
 		</div>
-		<div v-if="selectedPhoto !== null" class="photo-modal" @click="selectedPhoto = null">
+		<div
+			v-if="selectedPhotoIndex !== null"
+			v-touch:swipe.left="onSwipeLeft"
+			v-touch:swipe.right="onSwipeRight"
+			class="photo-modal"
+			@click="selectedPhotoIndex = null"
+		>
 			<div class="modal-mask">
 				<div class="modal-wrapper">
-					<img class="modal-image" :src="selectedPhoto.src">
+					<img class="modal-image" :src="photos[selectedPhotoIndex].src">
 				</div>
 			</div>
 		</div>
@@ -38,6 +44,25 @@
 <script>
 import InfiniteLoading from 'vue-infinite-loading';
 import calculateLayout from './lib/calculateLayout.js';
+
+const getIdAndPage = (urlStr) => {
+	const url = new URL(urlStr);
+	const filename = url.pathname.split('/')[2] || '';
+	const [basename = ''] = filename.split('.');
+	const [id = '', page = ''] = basename.split('_p');
+	return [parseInt(id) || 0, parseInt(page) || 0];
+};
+
+const sortPhotos = (photos) => {
+	photos.sort(({src: a}, {src: b}) => {
+		const [idA, pageA] = getIdAndPage(a);
+		const [idB, pageB] = getIdAndPage(b);
+		if (idA !== idB) {
+			return idA - idB;
+		}
+		return pageA - pageB;
+	});
+};
 
 export default {
 	name: 'PhotoGallery',
@@ -59,7 +84,7 @@ export default {
 			photoLayout: [],
 			windowWidth: document.body.clientWidth,
 			isLoading: false,
-			selectedPhoto: null,
+			selectedPhotoIndex: null,
 		};
 	},
 	watch: {
@@ -90,11 +115,20 @@ export default {
 			const data = await res.json();
 
 			const newPhotos = data.media.map(({w, h, src}) => ({width: w, height: h, src}));
-			newPhotos.sort((a, b) => a.src.localeCompare(b.src));
+			sortPhotos(newPhotos);
+
+			let index = this.photos.length;
+			for (const photo of newPhotos) {
+				photo.index = index;
+				index++;
+			}
+
 			this.photos.push(...newPhotos);
 			this.updateLayout(this.windowWidth);
 
-			await new Promise((resolve) => setTimeout(resolve, 2000));
+			await new Promise((resolve) => {
+				setTimeout(resolve, 2000);
+			});
 
 			this.isLoading = false;
 		},
@@ -110,6 +144,16 @@ export default {
 		},
 		updateDimensions() {
 			this.windowWidth = document.body.clientWidth;
+		},
+		onSwipeRight() {
+			if (this.selectedPhotoIndex !== null) {
+				this.selectedPhotoIndex = Math.max(0, this.selectedPhotoIndex - 1);
+			}
+		},
+		onSwipeLeft() {
+			if (this.selectedPhotoIndex !== null) {
+				this.selectedPhotoIndex = Math.min(this.photos.length - 1, this.selectedPhotoIndex + 1);
+			}
 		},
 		async onInfinite($state) {
 			if (this.isLoading) {
@@ -151,6 +195,7 @@ export default {
 		}
 
 		.photo {
+			background-color: #DDD;
 			&:not(:first-child) {
 				margin-left: 10px;
 			}
