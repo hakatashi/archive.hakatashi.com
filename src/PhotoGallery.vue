@@ -39,6 +39,25 @@
 import InfiniteLoading from 'vue-infinite-loading';
 import calculateLayout from './lib/calculateLayout.js';
 
+const getIdAndPage = (urlStr) => {
+	const url = new URL(urlStr);
+	const filename = url.pathname.split('/')[2] || '';
+	const [basename = ''] = filename.split('.');
+	const [id = '', page = ''] = basename.split('_p');
+	return [parseInt(id) || 0, parseInt(page) || 0];
+};
+
+const sortPhotos = (photos) => {
+	photos.sort(({src: a}, {src: b}) => {
+		const [idA, pageA] = getIdAndPage(a);
+		const [idB, pageB] = getIdAndPage(b);
+		if (idA !== idB) {
+			return idA - idB;
+		}
+		return pageA - pageB;
+	});
+};
+
 export default {
 	name: 'PhotoGallery',
 	components: {InfiniteLoading},
@@ -90,11 +109,13 @@ export default {
 			const data = await res.json();
 
 			const newPhotos = data.media.map(({w, h, src}) => ({width: w, height: h, src}));
-			newPhotos.sort((a, b) => a.src.localeCompare(b.src));
+			sortPhotos(newPhotos);
 			this.photos.push(...newPhotos);
 			this.updateLayout(this.windowWidth);
 
-			await new Promise((resolve) => setTimeout(resolve, 2000));
+			await new Promise((resolve) => {
+				setTimeout(resolve, 2000);
+			});
 
 			this.isLoading = false;
 		},
