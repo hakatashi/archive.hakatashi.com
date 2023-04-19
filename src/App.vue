@@ -3,12 +3,14 @@
 		<app-v-1 v-if="app === 'v1'"/>
 		<photo-gallery v-else-if="app === 'pixiv-public'" mode="pixiv" visibility="public"/>
 		<photo-gallery v-else-if="app === 'pixiv-private'" mode="pixiv" visibility="private"/>
+		<fanbox v-else-if="app === 'fanbox'"/>
 		<div v-else>
 			<h1 class="title">HakataArchiver</h1>
 			<ul class="switcher">
 				<li class="app-select" @click="app = 'v1'">V1⏳</li>
 				<li class="app-select" @click="app = 'pixiv-public'">pixiv public🅿️</li>
 				<li class="app-select" @click="app = 'pixiv-private'">pixiv private🅿️</li>
+				<li class="app-select" @click="app = 'fanbox'">pixiv fanbox🗃️</li>
 			</ul>
 		</div>
 	</div>
@@ -16,11 +18,12 @@
 
 <script>
 import AppV1 from './AppV1.vue';
+import Fanbox from './Fanbox.vue';
 import PhotoGallery from './PhotoGallery.vue';
 
 export default {
 	name: 'App',
-	components: {AppV1, PhotoGallery},
+	components: {AppV1, PhotoGallery, Fanbox},
 	data() {
 		return {
 			app: null,
