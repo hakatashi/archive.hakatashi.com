@@ -1,9 +1,12 @@
 {
-    "extends": "@hakatashi",
-    "rules": {
-        "no-console": "off",
-        "max-params": "off",
-        "camelcase": "off",
-        "array-plural/array-plural": "off"
-    }
+	"extends": "@hakatashi",
+	"parserOptions": {
+		"ecmaVersion": "latest"
+	},
+	"rules": {
+		"no-console": "off",
+		"max-params": "off",
+		"camelcase": "off",
+		"array-plural/array-plural": "off"
+	}
 }

@@ -33,6 +33,10 @@ export default {
 </script>
 
 <style lang="scss">
+@import "../node_modules/photoswipe/dist/photoswipe.css";
+@import "../node_modules/photoswipe/dist/default-skin/default-skin.css";
+@import "../node_modules/bulma/css/bulma.css";
+
 html, body, #app, .app-selector {
 	width: 100%;
 	height: 100%;
