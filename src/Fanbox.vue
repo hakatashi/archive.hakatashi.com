@@ -9,8 +9,12 @@
 			>
 		</div>
 		<div class="main-area">
-			<div class="content">
-				<h1 class="post-title">{{title}}</h1>
+			<div class="content" ref="content">
+				<h1 class="post-title">
+					<a :href="postUrl" target="_blank">
+						{{title}}
+					</a>
+				</h1>
 				<template v-for="block in blocks">
 					<p v-if="block.type === 'p'">
 						{{block.text}}
@@ -39,6 +43,8 @@ export default {
 		return {
 			apikey: localStorage.getItem('HAKATASHI_API_KEY'),
 			windowWidth: document.body.clientWidth,
+			id: '',
+			creatorId: '',
 			images: [],
 			imagesMap: {},
 			files: [],
@@ -48,6 +54,9 @@ export default {
 		};
 	},
 	computed: {
+		postUrl() {
+			return `https://${this.creatorId}.fanbox.cc/posts/${this.id}`
+		}
 	},
 	watch: {
 		apikey(newKey) {
@@ -74,6 +83,8 @@ export default {
 			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/fanbox?apikey=${this.apikey}`);
 			const data = await res.json();
 
+			this.id = data.post?.id ?? '';
+			this.creatorId = data.post?.creatorId ?? '';
 			this.images = data.images ?? [];
 			this.imagesMap = Object.assign({}, ...this.images.map((image) => ({[image.id]: image})));
 			this.files = data.files ?? [];
@@ -104,6 +115,7 @@ export default {
 		},
 		onClickReload() {
 			this.loadMedia();
+			this.$refs.content.scrollTop = 0;
 		},
 	},
 };
