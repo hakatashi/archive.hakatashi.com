@@ -20,6 +20,7 @@
 import AppV1 from './AppV1.vue';
 import Fanbox from './Fanbox.vue';
 import PhotoGallery from './PhotoGallery.vue';
+import 'photoswipe/style.css';
 
 export default {
 	name: 'App',
@@ -33,8 +34,6 @@ export default {
 </script>
 
 <style lang="scss">
-@import "../node_modules/photoswipe/dist/photoswipe.css";
-@import "../node_modules/photoswipe/dist/default-skin/default-skin.css";
 @import "../node_modules/bulma/css/bulma.css";
 
 html, body, #app, .app-selector {

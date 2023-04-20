@@ -36,6 +36,7 @@
 				</article>
 
 				<vue-justified-layout
+					id="app-v1-gallery"
 					v-slot="{item, index}"
 					:items="media"
 					:options="{targetRowHeight: desiredHeight}"
@@ -50,7 +51,10 @@
 						<a
 							:href="item.url"
 							itemprop="contentUrl"
-							@click.prevent="onClickImage(index, $event)"
+							:data-pswp-width="item.width"
+							:data-pswp-height="item.height"
+							target="_blank"
+							rel="noopener noreferrer"
 						>
 							<img :src="item.url" itemprop="thumbnail">
 						</a>
@@ -63,44 +67,6 @@
 					type="text"
 					placeholder="API Key"
 				>
-
-				<div
-					ref="pswp"
-					class="pswp"
-					tabindex="-1"
-					role="dialog"
-					aria-hidden="true"
-				>
-					<div class="pswp__bg"/>
-					<div class="pswp__scroll-wrap">
-						<div class="pswp__container">
-							<div class="pswp__item"/>
-							<div class="pswp__item"/>
-							<div class="pswp__item"/>
-						</div>
-
-						<div class="pswp__ui pswp__ui--hidden">
-							<div class="pswp__top-bar">
-								<div class="pswp__counter"/>
-								<button class="pswp__button pswp__button--close" title="Close (Esc)"/>
-								<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"/>
-								<button class="pswp__button pswp__button--zoom" title="Zoom in/out"/>
-								<div class="pswp__preloader">
-									<div class="pswp__preloader__icn">
-										<div class="pswp__preloader__cut">
-											<div class="pswp__preloader__donut"/>
-										</div>
-									</div>
-								</div>
-							</div>
-							<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"/>
-							<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"/>
-							<div class="pswp__caption">
-								<div class="pswp__caption__center"/>
-							</div>
-						</div>
-					</div>
-				</div>
 			</div>
 		</section>
 		<footer class="float-menu">
@@ -147,7 +113,7 @@
 
 <script>
 import PhotoSwipe from 'photoswipe';
-import PhotoSwipeUI_Default from 'photoswipe/dist/photoswipe-ui-default.js';
+import PhotoSwipeLightbox from 'photoswipe/lightbox';
 import VueJustifiedLayout from './components/JustifiedLayout.vue';
 
 export default {
@@ -231,34 +197,6 @@ export default {
 		this.loadMedia(this.mode, this.visibility);
 	},
 	methods: {
-		onClickImage(index, event) {
-			const parentElement = event.target.closest('.gallery');
-			const imageSizes = Array.from(parentElement.children).map((el) => {
-				const imgEl = el.querySelector('img');
-				return {width: imgEl.naturalWidth, height: imgEl.naturalHeight};
-			});
-			console.log(imageSizes);
-			const gallery = new PhotoSwipe(
-				this.$refs.pswp,
-				PhotoSwipeUI_Default,
-				this.media.map(({url}, i) => ({src: url, w: imageSizes[i].width, h: imageSizes[i].height})),
-				{
-					index,
-					getThumbBoundsFn: (i) => {
-						const imgEl = parentElement.children[i].querySelector('img');
-						const rect = imgEl.getBoundingClientRect();
-						const imageSize = imageSizes[i];
-						const zoom = Math.max(rect.width / imageSize.width, rect.height / imageSize.height);
-						return {
-							x: rect.left + (rect.width - imageSize.width * zoom) / 2,
-							y: rect.top + (rect.height - imageSize.height * zoom) / 2 + window.pageYOffset,
-							w: imageSize.width * zoom,
-						};
-					},
-				},
-			);
-			gallery.init();
-		},
 		onClickStockNijisearch () {
 			const iframe = document.createElement('iframe');
 			iframe.src = `https://nijisearch.kivantium.net/status/${this.entry.id_str}/`;
@@ -276,6 +214,8 @@ export default {
 			this.loadMedia(mode, visibility);
 		},
 		async loadMedia(mode, visibility) {
+			this.lightbox?.destroy();
+
 			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/${mode}?apikey=${this.apikey}&visibility=${visibility}`);
 			const data = await res.json();
 
@@ -284,6 +224,20 @@ export default {
 			this.isStockCompleted = false;
 			this.mode = mode;
 			this.visibility = visibility;
+
+			this.lightbox = new PhotoSwipeLightbox({
+				gallery: '#app-v1-gallery',
+				children: 'a',
+				pswpModule: PhotoSwipe,
+				bgOpacity: 1,
+				wheelToZoom: true,
+				initialZoomLevel: ({elementSize, panAreaSize}) => (
+					Math.min(panAreaSize.x / elementSize.x, panAreaSize.y / elementSize.y)
+				),
+				secondaryZoomLevel: 1,
+				maxZoomLevel: 10,
+			});
+			this.lightbox.init();
 		},
 		getDateText(input) {
 			const date = new Date(input);
