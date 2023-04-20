@@ -9,17 +9,22 @@
 			>
 		</div>
 		<div class="main-area">
-			<div class="content" ref="content">
+			<div ref="content" class="content">
 				<h1 class="post-title">
-					<a :href="postUrl" target="_blank">
+					<a :href="postUrl" target="_blank" rel="noopener noreferrer">
 						{{title}}
 					</a>
 				</h1>
-				<template v-for="block in blocks">
+				<template v-for="block, blockIndex in blocks" :key="blockIndex">
 					<p v-if="block.type === 'p'">
 						{{block.text}}
 					</p>
-					<img v-else-if="block.type === 'image'" :src="imagesMap[block.imageId]?.src"/>
+					<img
+						v-else-if="block.type === 'image'"
+						:src="imagesMap[block.imageId]?.src"
+						:data-block-index="blockIndex"
+						@click.prevent="onClickImage(blockIndex, $event)"
+					>
 					<div v-else>
 						{{block}}
 					</div>
@@ -33,10 +38,51 @@
 				</button>
 			</p>
 		</footer>
+
+		<div
+			ref="pswp"
+			class="pswp"
+			tabindex="-1"
+			role="dialog"
+			aria-hidden="true"
+		>
+			<div class="pswp__bg"/>
+			<div class="pswp__scroll-wrap">
+				<div class="pswp__container">
+					<div class="pswp__item"/>
+					<div class="pswp__item"/>
+					<div class="pswp__item"/>
+				</div>
+
+				<div class="pswp__ui pswp__ui--hidden">
+					<div class="pswp__top-bar">
+						<div class="pswp__counter"/>
+						<button class="pswp__button pswp__button--close" title="Close (Esc)"/>
+						<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"/>
+						<button class="pswp__button pswp__button--zoom" title="Zoom in/out"/>
+						<div class="pswp__preloader">
+							<div class="pswp__preloader__icn">
+								<div class="pswp__preloader__cut">
+									<div class="pswp__preloader__donut"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)"/>
+					<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"/>
+					<div class="pswp__caption">
+						<div class="pswp__caption__center"/>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script>
+import PhotoSwipe from 'photoswipe';
+import PhotoSwipeUI_Default from 'photoswipe/dist/photoswipe-ui-default.js';
+
 export default {
 	name: 'Fanbox',
 	data() {
@@ -55,8 +101,8 @@ export default {
 	},
 	computed: {
 		postUrl() {
-			return `https://${this.creatorId}.fanbox.cc/posts/${this.id}`
-		}
+			return `https://${this.creatorId}.fanbox.cc/posts/${this.id}`;
+		},
 	},
 	watch: {
 		apikey(newKey) {
@@ -75,9 +121,6 @@ export default {
 			if (this.isLoading) {
 				return;
 			}
-			console.log('mounted');
-
-
 			this.isLoading = true;
 
 			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/fanbox?apikey=${this.apikey}`);
@@ -100,7 +143,7 @@ export default {
 			}
 
 			if (data.post?.body?.images) {
-				for (const image of data.post?.body?.images) {
+				for (const image of data.post.body.images) {
 					this.blocks.push({
 						type: 'image',
 						imageId: image.id,
@@ -112,6 +155,44 @@ export default {
 		},
 		updateDimensions() {
 			this.windowWidth = document.body.clientWidth;
+		},
+		onClickImage(blockIndex) {
+			const imageBlocks = this.blocks
+				.map((block, index) => ({
+					...block,
+					index,
+				}))
+				.filter((block) => block.type === 'image');
+			const images = imageBlocks.map((block) => {
+				const imageData = this.imagesMap[block.imageId];
+				return {
+					w: imageData?.w ?? 0,
+					h: imageData?.h ?? 0,
+					src: imageData?.src ?? '',
+				};
+			});
+			const index = imageBlocks.findIndex((block) => block.index === blockIndex);
+			const gallery = new PhotoSwipe(
+				this.$refs.pswp,
+				PhotoSwipeUI_Default,
+				images,
+				{
+					index,
+					getThumbBoundsFn: (i) => {
+						const clickedBlockIndex = imageBlocks[i].index;
+						const imgEl = this.$refs.content.querySelector(`img[data-block-index="${clickedBlockIndex}"]`);
+						const rect = imgEl.getBoundingClientRect();
+						const imageSize = images[i];
+						const zoom = Math.max(rect.width / imageSize.w, rect.height / imageSize.h);
+						return {
+							x: rect.left + (rect.width - imageSize.w * zoom) / 2,
+							y: rect.top + (rect.height - imageSize.h * zoom) / 2 + window.pageYOffset,
+							w: imageSize.w * zoom,
+						};
+					},
+				},
+			);
+			gallery.init();
 		},
 		onClickReload() {
 			this.loadMedia();
@@ -145,6 +226,10 @@ export default {
 .content {
 	max-width: 60rem;
 	margin: 0 auto;
+
+	img {
+		cursor: pointer;
+	}
 }
 
 .float-menu {
