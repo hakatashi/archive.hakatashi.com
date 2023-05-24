@@ -9,7 +9,10 @@
 			>
 		</div>
 		<div class="photo-area">
-			<div class="photo-container">
+			<form v-if="mode === 'tag' && tag === null" @submit.prevent="tag = $event.target[0].value">
+				<input type="text" placeholder="Tag" class="tag-input">
+			</form>
+			<div v-else class="photo-container">
 				<div v-for="row, index in photoLayout" :key="index" class="photo-row">
 					<div v-for="photo in row" :key="photo.src" class="photo">
 						<img
@@ -89,6 +92,8 @@
 <script>
 import InfiniteLoading from 'vue-infinite-loading';
 import calculateLayout from './lib/calculateLayout.js';
+import {db} from './lib/firestore.js';
+import { collection, query, orderBy, startAfter, limit, getDocs, } from "firebase/firestore";
 
 const getIdAndPage = (urlStr) => {
 	const url = new URL(urlStr);
@@ -148,7 +153,7 @@ export default {
 		},
 		visibility: {
 			type: String,
-			required: true,
+			default: 'public',
 		},
 	},
 	data() {
@@ -160,6 +165,8 @@ export default {
 			windowWidth: document.body.clientWidth,
 			isLoading: false,
 			selectedPhotoIndex: null,
+			tag: null,
+			cursor: 1,
 		};
 	},
 	computed: {
@@ -189,12 +196,44 @@ export default {
 	mounted() {
 		window.addEventListener('resize', this.updateDimensions);
 
-		this.loadMedia(this.mode, this.visibility);
+		if (this.mode !== 'tag') {
+			this.loadMedia(this.mode, this.visibility);
+		}
 	},
 	unmounted() {
 		window.removeEventListener('resize', this.updateDimensions);
 	},
 	methods: {
+		async fetchMedia(mode, visibility) {
+			if (mode === 'tag') {
+				const tagQuery = query(
+					collection(db, "media"),
+					orderBy(`danbooru_tags.${this.tag}`, 'desc'),
+					startAfter(this.cursor),
+					limit(25),
+				);
+				const tagDocs = await getDocs(tagQuery);
+				const params = new URLSearchParams([['apikey', this.apikey]]);
+				for (const doc of tagDocs.docs) {
+					const keyLength = Object.keys(doc.data().danbooru_tags).length;
+					if (keyLength > 500) {
+						continue;
+					}
+					params.append('image', doc.id.replaceAll('+', '/'));
+					const value = doc.data().danbooru_tags[this.tag];
+					if (this.cursor > value) {
+						this.cursor = value;
+					}
+				}
+				const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/getImages?${params}`);
+				const data = await res.json();
+				return {media: data.images, entries: []};
+			}
+
+			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/${mode}?apikey=${this.apikey}&visibility=${visibility}&count=3`);
+			const data = await res.json();
+			return data;
+		},
 		async loadMedia(mode, visibility) {
 			if (this.isLoading) {
 				return;
@@ -202,8 +241,7 @@ export default {
 
 			this.isLoading = true;
 
-			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/${mode}?apikey=${this.apikey}&visibility=${visibility}&count=3`);
-			const data = await res.json();
+			const data = await this.fetchMedia(mode, visibility);
 
 			const newPhotos = data.media.map(({w, h, src}) => ({width: w, height: h, src}));
 			sortPhotos(newPhotos);
@@ -284,6 +322,19 @@ export default {
 
 .photo-area {
 	flex: 0 0 auto;
+
+	.tag-input {
+		width: 100%;
+		max-width: 30rem;
+		font-size: 2rem;
+		margin: 0 auto;
+		display: block;
+		border-radius: 6px;
+		border: 1px solid #CCC;
+		outline: none;
+		padding: 0.5rem;
+		color: inherit;
+	}
 
 	.photo-row {
 		display: flex;
