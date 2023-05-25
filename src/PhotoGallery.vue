@@ -1,18 +1,44 @@
 <template>
 	<div class="photo-gallery">
 		<div class="top-area">
-			<input
-				v-model="apikey"
-				class="input"
-				type="text"
-				placeholder="API Key"
-			>
+			<div class="top-area-row">
+				<input
+					v-model="apikey"
+					class="input"
+					type="text"
+					placeholder="API Key"
+				>
+			</div>
+			<div class="top-area-row">
+				<form v-if="mode === 'tag'" @submit.prevent="setTag($event.target[0].value)">
+					<input
+						list="tag"
+						class="input"
+						type="text"
+						placeholder="Tag"
+					>
+					<datalist id="tag">
+						<option
+							v-for="tagInfo in tags"
+							:key="tagInfo.name"
+							:value="tagInfo.name"
+							:label="`${tagInfo.name} (${tagInfo.count})`"
+						/>
+					</datalist>
+				</form>
+				<input
+					class="input"
+					type="number"
+					step="0.01"
+					min="0.05"
+					max="1.00"
+					defaultValue="0.05"
+					placeholder="Threshold"
+				>
+			</div>
 		</div>
 		<div class="photo-area">
-			<form v-if="mode === 'tag' && tag === null" @submit.prevent="tag = $event.target[0].value">
-				<input type="text" placeholder="Tag" class="tag-input">
-			</form>
-			<div v-else class="photo-container">
+			<div v-if="mode !== 'tag' || tag !== null" class="photo-container">
 				<div v-for="row, index in photoLayout" :key="index" class="photo-row">
 					<div v-for="photo in row" :key="photo.src" class="photo">
 						<img
@@ -21,7 +47,7 @@
 								width: `${photo.renderWidth}px`,
 								height: `${photo.renderHeight}px`,
 							}"
-							@click="selectedPhotoIndex = photo.index"
+							@click="() => selectedPhotoIndex = photo.index"
 						>
 					</div>
 				</div>
@@ -90,10 +116,10 @@
 </template>
 
 <script>
+import {collection, query, orderBy, startAfter, limit, getDocs} from 'firebase/firestore';
 import InfiniteLoading from 'vue-infinite-loading';
 import calculateLayout from './lib/calculateLayout.js';
 import {db} from './lib/firestore.js';
-import { collection, query, orderBy, startAfter, limit, getDocs, } from "firebase/firestore";
 
 const getIdAndPage = (urlStr) => {
 	const url = new URL(urlStr);
@@ -166,6 +192,7 @@ export default {
 			isLoading: false,
 			selectedPhotoIndex: null,
 			tag: null,
+			tags: [],
 			cursor: 1,
 		};
 	},
@@ -196,7 +223,9 @@ export default {
 	mounted() {
 		window.addEventListener('resize', this.updateDimensions);
 
-		if (this.mode !== 'tag') {
+		if (this.mode === 'tag') {
+			this.loadTags();
+		} else {
 			this.loadMedia(this.mode, this.visibility);
 		}
 	},
@@ -207,7 +236,7 @@ export default {
 		async fetchMedia(mode, visibility) {
 			if (mode === 'tag') {
 				const tagQuery = query(
-					collection(db, "media"),
+					collection(db, 'media'),
 					orderBy(`danbooru_tags.${this.tag}`, 'desc'),
 					startAfter(this.cursor),
 					limit(25),
@@ -263,6 +292,23 @@ export default {
 
 			this.isLoading = false;
 		},
+		async loadTags() {
+			const tagQuery = query(
+				collection(db, 'danbooru_tag_stats'),
+				orderBy('count', 'desc'),
+				limit(1000),
+			);
+			const tagDocs = await getDocs(tagQuery);
+			this.tags = tagDocs.docs.map((doc) => ({...doc.data(), name: doc.id}));
+		},
+		setTag(tag) {
+			this.tag = tag;
+			this.photos = [];
+			this.entries = [];
+			this.cursor = 1;
+			this.updateLayout(this.windowWidth);
+			this.loadMedia(this.mode, this.visibility);
+		},
 		updateLayout(targetWidth) {
 			this.photoLayout = calculateLayout({
 				photos: this.photos,
@@ -300,7 +346,6 @@ export default {
 			if (this.isLoading) {
 				return;
 			}
-			console.log('onInfinite');
 			await this.loadMedia(this.mode, this.visibility);
 			$state.loaded();
 		},
@@ -318,23 +363,18 @@ export default {
 
 .top-area {
 	flex: 0 0 3rem;
+
+	&-row {
+		display: flex;
+
+		& > * {
+			flex: 1 1 0;
+		}
+	}
 }
 
 .photo-area {
 	flex: 0 0 auto;
-
-	.tag-input {
-		width: 100%;
-		max-width: 30rem;
-		font-size: 2rem;
-		margin: 0 auto;
-		display: block;
-		border-radius: 6px;
-		border: 1px solid #CCC;
-		outline: none;
-		padding: 0.5rem;
-		color: inherit;
-	}
 
 	.photo-row {
 		display: flex;
