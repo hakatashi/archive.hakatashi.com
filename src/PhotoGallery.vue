@@ -33,7 +33,6 @@
 					step="0.01"
 					min="0.05"
 					max="1.00"
-					defaultValue="0.05"
 					placeholder="Threshold"
 				>
 				<div>Media stocks: {{entryStocks.length}}</div>
@@ -200,7 +199,7 @@ export default {
 			tag: null,
 			tags: [],
 			cursor: 1,
-			threshold: 0.05,
+			threshold: 0.1,
 			noResults: false,
 		};
 	},
