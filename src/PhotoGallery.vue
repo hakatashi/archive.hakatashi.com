@@ -9,8 +9,8 @@
 					placeholder="API Key"
 				>
 			</div>
-			<div class="top-area-row">
-				<form v-if="mode === 'tag'" @submit.prevent="setTag($event.target[0].value)">
+			<div v-if="mode === 'tag'" class="top-area-row">
+				<form @submit.prevent="setTag($event.target[0].value)">
 					<input
 						list="tag"
 						class="input"
@@ -27,6 +27,7 @@
 					</datalist>
 				</form>
 				<input
+					v-model="threshold"
 					class="input"
 					type="number"
 					step="0.01"
@@ -35,6 +36,7 @@
 					defaultValue="0.05"
 					placeholder="Threshold"
 				>
+				<div>Media stocks: {{entryStocks.length}}</div>
 			</div>
 		</div>
 		<div class="photo-area">
@@ -51,6 +53,7 @@
 						>
 					</div>
 				</div>
+				<div v-if="noResults" class="notification is-warning">No more results</div>
 				<infinite-loading v-if="!isLoading" @infinite="onInfinite"/>
 			</div>
 		</div>
@@ -116,7 +119,9 @@
 </template>
 
 <script>
-import {collection, query, orderBy, startAfter, limit, getDocs} from 'firebase/firestore';
+import {collection, query, orderBy, startAfter, limit, getDocs, where} from 'firebase/firestore';
+import last from 'lodash/last';
+import shuffle from 'lodash/shuffle';
 import InfiniteLoading from 'vue-infinite-loading';
 import calculateLayout from './lib/calculateLayout.js';
 import {db} from './lib/firestore.js';
@@ -188,12 +193,15 @@ export default {
 			photos: [],
 			photoLayout: [],
 			entries: [],
+			entryStocks: [],
 			windowWidth: document.body.clientWidth,
 			isLoading: false,
 			selectedPhotoIndex: null,
 			tag: null,
 			tags: [],
 			cursor: 1,
+			threshold: 0.05,
+			noResults: false,
 		};
 	},
 	computed: {
@@ -235,25 +243,34 @@ export default {
 	methods: {
 		async fetchMedia(mode, visibility) {
 			if (mode === 'tag') {
-				const tagQuery = query(
-					collection(db, 'media'),
-					orderBy(`danbooru_tags.${this.tag}`, 'desc'),
-					startAfter(this.cursor),
-					limit(25),
-				);
-				const tagDocs = await getDocs(tagQuery);
+				if (this.entryStocks.length < 25) {
+					const tagQuery = query(
+						collection(db, 'media'),
+						where(`danbooru_tags.${this.tag}`, '>=', this.threshold),
+						orderBy(`danbooru_tags.${this.tag}`, 'desc'),
+						startAfter(this.cursor),
+						limit(1000),
+					);
+					const tagDocs = await getDocs(tagQuery);
+					if (tagDocs.docs.length === 0) {
+						this.noResults = true;
+						return {media: [], entries: []};
+					}
+					this.cursor = last(tagDocs.docs).data().danbooru_tags[this.tag];
+					this.entryStocks.push(...shuffle(tagDocs.docs));
+				}
+
+				const newEntries = this.entryStocks.splice(0, 25);
+
 				const params = new URLSearchParams([['apikey', this.apikey]]);
-				for (const doc of tagDocs.docs) {
-					const keyLength = Object.keys(doc.data().danbooru_tags).length;
+				for (const entry of newEntries) {
+					const keyLength = Object.keys(entry.data().danbooru_tags).length;
 					if (keyLength > 500) {
 						continue;
 					}
-					params.append('image', doc.id.replaceAll('+', '/'));
-					const value = doc.data().danbooru_tags[this.tag];
-					if (this.cursor > value) {
-						this.cursor = value;
-					}
+					params.append('image', entry.id.replaceAll('+', '/'));
 				}
+
 				const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/getImages?${params}`);
 				const data = await res.json();
 				return {media: data.images, entries: []};
@@ -305,6 +322,8 @@ export default {
 			this.tag = tag;
 			this.photos = [];
 			this.entries = [];
+			this.entryStocks = [];
+			this.noResults = false;
 			this.cursor = 1;
 			this.updateLayout(this.windowWidth);
 			this.loadMedia(this.mode, this.visibility);
