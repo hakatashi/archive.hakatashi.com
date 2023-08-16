@@ -185,7 +185,8 @@ const getEntryObject = (entry, mode) => {
 			description: entry.text,
 			date: entry.created_at,
 		};
-	} else if (mode === 'pixiv') {
+	}
+	if (mode === 'pixiv') {
 		const [, , , , , , , year, month, date, hour, minute, second] = entry.url.split('/').map((c) => parseInt(c));
 		return {
 			id: parseInt(entry.id),
@@ -196,6 +197,43 @@ const getEntryObject = (entry, mode) => {
 			entryUrl: `https://www.pixiv.net/artworks/${entry.id}`,
 			description: `${entry.title || ''} ${entry.tags.map((t) => `#${t}`).join(' ')}`,
 			date: new Date(year, month - 1, date, hour, minute, second).toUTCString(),
+		};
+	}
+	if (mode === 'discover') {
+		if (entry.type === 'pixiv') {
+			return {
+				id: entry.artworkId,
+				profileImage: entry.artwork.profile_img.replace(/pximg\.net/, 'pixiv.cat'),
+				userId: entry.artwork.user_id,
+				userName: entry.artwork.user_name,
+				userUrl: `https://www.pixiv.net/users/${entry.artwork.user_id}`,
+				entryUrl: `https://www.pixiv.net/artworks/${entry.artworkId}`,
+				description: `${entry.artwork.title || ''} ${entry.artwork.tags.map((t) => `#${t}`).join(' ')}`,
+				date: new Date(entry.artwork.illust_upload_timestamp * 1000),
+				w: entry.width,
+				h: entry.height,
+				src: entry.url,
+			};
+		}
+		if (entry.type === 'danbooru') {
+			return {
+				id: entry.postId,
+				profileImage: '',
+				userId: entry.post.tag_string_artist,
+				userName: entry.post.tag_string_artist,
+				userUrl: '',
+				entryUrl: `https://danbooru.donmai.us/posts/${entry.postId}`,
+				description: entry.post.tag_string,
+				date: new Date(entry.post.created_at),
+				w: entry.width,
+				h: entry.height,
+				src: entry.url,
+			};
+		}
+		return {
+			w: entry.width,
+			h: entry.height,
+			src: entry.url,
 		};
 	}
 
@@ -247,6 +285,10 @@ export default {
 		selectedEntry() {
 			if (this.selectedPhotoIndex === null) {
 				return {};
+			}
+			console.log(this.mode, this.photos, this.selectedPhoto);
+			if (this.mode === 'discover') {
+				return this.selectedPhoto;
 			}
 			const [id] = getIdAndPage(this.selectedPhoto.src);
 			const selectedEntry = this.entries.find((entry) => parseInt(entry.id) === id);
@@ -329,7 +371,7 @@ export default {
 					const res = await fetch(`https://gettopimages-vjxrdplkqa-uc.a.run.app/?${params}`);
 					const images = await res.json();
 					this.cursor = last(images).score;
-					this.entryStocks.push(...images.map(({width, height, url}) => ({w: width, h: height, src: url})));
+					this.entryStocks.push(...images.map((image) => getEntryObject(image, mode)));
 				}
 
 				const newEntries = this.entryStocks.splice(0, 25);
@@ -350,7 +392,7 @@ export default {
 
 			const data = await this.fetchMedia(mode, visibility);
 
-			const newPhotos = data.media.map(({w, h, src}) => ({width: w, height: h, src}));
+			const newPhotos = data.media.map((medium) => ({...medium, width: medium.w, height: medium.h, src: medium.src}));
 			sortPhotos(newPhotos);
 
 			let index = this.photos.length;
