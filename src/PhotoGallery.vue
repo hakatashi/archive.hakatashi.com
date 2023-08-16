@@ -37,6 +37,35 @@
 				>
 				<div>Media stocks: {{entryStocks.length}}</div>
 			</div>
+			<div v-if="mode === 'discover'" class="top-area-row">
+				<form>
+					<select v-model="model" class="input">
+						<option value="sklearn_multiclass_linear_svc" selected>
+							sklearn_multiclass_linear_svc
+						</option>
+						<option value="sklearn_multiclass_ada_boost">
+							sklearn_multiclass_ada_boost
+						</option>
+						<option value="torch_multiclass_onehot_shallow_network_multilayer">
+							torch_multiclass_onehot_shallow_network_multilayer
+						</option>
+					</select>
+				</form>
+				<form>
+					<select v-model="category" class="input">
+						<option value="not_bookmarked">not_bookmarked</option>
+						<option value="bookmarked_public">bookmarked_public</option>
+						<option value="bookmarked_private" selected>
+							bookmarked_private
+						</option>
+					</select>
+				</form>
+				<input
+					v-model="date"
+					type="date"
+					class="input"
+				>
+			</div>
 		</div>
 		<div class="photo-area">
 			<div v-if="mode !== 'tag' || tag !== null" class="photo-container">
@@ -201,6 +230,11 @@ export default {
 			cursor: 1,
 			threshold: 0.1,
 			noResults: false,
+
+			// discover
+			model: 'sklearn_multiclass_linear_svc',
+			category: 'bookmarked_private',
+			date: '2023-08-14',
 		};
 	},
 	computed: {
@@ -225,6 +259,15 @@ export default {
 		},
 		windowWidth(newWidth) {
 			this.updateLayout(newWidth);
+		},
+		model() {
+			this.resetMedia(1);
+		},
+		category() {
+			this.resetMedia(1);
+		},
+		date() {
+			this.resetMedia(1);
 		},
 	},
 	mounted() {
@@ -275,6 +318,25 @@ export default {
 				return {media: data.images, entries: []};
 			}
 
+			if (mode === 'discover') {
+				if (this.entryStocks.length < 25) {
+					const params = new URLSearchParams([
+						['apikey', this.apikey],
+						['model', this.model],
+						['category', this.category],
+						['date', this.date],
+					]);
+					const res = await fetch(`https://gettopimages-vjxrdplkqa-uc.a.run.app/?${params}`);
+					const images = await res.json();
+					this.cursor = last(images).score;
+					this.entryStocks.push(...images.map(({width, height, url}) => ({w: width, h: height, src: url})));
+				}
+
+				const newEntries = this.entryStocks.splice(0, 25);
+
+				return {media: newEntries, entries: []};
+			}
+
 			const res = await fetch(`https://co791uc66h.execute-api.ap-northeast-1.amazonaws.com/production/random/${mode}?apikey=${this.apikey}&visibility=${visibility}&count=3`);
 			const data = await res.json();
 			return data;
@@ -319,13 +381,7 @@ export default {
 		},
 		setTag(tag) {
 			this.tag = tag;
-			this.photos = [];
-			this.entries = [];
-			this.entryStocks = [];
-			this.noResults = false;
-			this.cursor = 1;
-			this.updateLayout(this.windowWidth);
-			this.loadMedia(this.mode, this.visibility);
+			this.resetMedia(1);
 		},
 		updateLayout(targetWidth) {
 			this.photoLayout = calculateLayout({
@@ -366,6 +422,15 @@ export default {
 			}
 			await this.loadMedia(this.mode, this.visibility);
 			$state.loaded();
+		},
+		resetMedia(cursor) {
+			this.photos = [];
+			this.entries = [];
+			this.entryStocks = [];
+			this.noResults = false;
+			this.cursor = cursor;
+			this.updateLayout(this.windowWidth);
+			this.loadMedia(this.mode, this.visibility);
 		},
 	},
 };
