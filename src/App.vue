@@ -5,6 +5,7 @@
 		<photo-gallery v-else-if="app === 'pixiv-private'" mode="pixiv" visibility="private"/>
 		<fanbox v-else-if="app === 'fanbox'"/>
 		<photo-gallery v-else-if="app === 'tag'" mode="tag"/>
+		<photo-gallery v-else-if="app === 'discover'" mode="discover"/>
 		<div v-else>
 			<h1 class="title">HakataArchiver</h1>
 			<ul class="switcher">
@@ -13,6 +14,7 @@
 				<li class="app-select" @click="app = 'pixiv-private'">pixiv private🅿️</li>
 				<li class="app-select" @click="app = 'fanbox'">pixiv fanbox🗃️</li>
 				<li class="app-select" @click="app = 'tag'">tag cloud☁️</li>
+				<li class="app-select" @click="app = 'discover'">Discover🔎️</li>
 			</ul>
 		</div>
 	</div>
