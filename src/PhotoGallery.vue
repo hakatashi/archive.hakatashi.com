@@ -9,8 +9,8 @@
 					placeholder="API Key"
 				>
 			</div>
-			<div v-if="mode === 'tag'" class="top-area-row">
-				<form @submit.prevent="setTag($event.target[0].value)">
+			<div v-if="mode === 'tag'" class="columns is-gapless">
+				<form class="column" @submit.prevent="setTag($event.target[0].value)">
 					<input
 						list="tag"
 						class="input"
@@ -26,19 +26,21 @@
 						/>
 					</datalist>
 				</form>
-				<input
-					v-model="threshold"
-					class="input"
-					type="number"
-					step="0.01"
-					min="0.05"
-					max="1.00"
-					placeholder="Threshold"
-				>
-				<div>Media stocks: {{entryStocks.length}}</div>
+				<div class="column">
+					<input
+						v-model="threshold"
+						class="input"
+						type="number"
+						step="0.01"
+						min="0.05"
+						max="1.00"
+						placeholder="Threshold"
+					>
+				</div>
+				<div class="column">Media stocks: {{entryStocks.length}}</div>
 			</div>
-			<div v-if="mode === 'discover'" class="top-area-row">
-				<form>
+			<div v-if="mode === 'discover'" class="columns is-gapless">
+				<form class="column">
 					<select v-model="model" class="input">
 						<option value="sklearn_multiclass_linear_svc" selected>
 							sklearn_multiclass_linear_svc
@@ -51,7 +53,7 @@
 						</option>
 					</select>
 				</form>
-				<form>
+				<form class="column">
 					<select v-model="category" class="input">
 						<option value="not_bookmarked">not_bookmarked</option>
 						<option value="bookmarked_public">bookmarked_public</option>
@@ -60,11 +62,14 @@
 						</option>
 					</select>
 				</form>
-				<input
-					v-model="date"
-					type="date"
-					class="input"
-				>
+				<div class="column">
+					<input
+						v-model="date"
+						type="date"
+						class="input"
+					>
+				</div>
+				<div class="column">{{info}}</div>
 			</div>
 		</div>
 		<div class="photo-area">
@@ -219,12 +224,12 @@ const getEntryObject = (entry, mode) => {
 			return {
 				id: entry.postId,
 				profileImage: '',
-				userId: entry.post.tag_string_artist,
-				userName: entry.post.tag_string_artist,
+				userId: entry.post?.tag_string_artist,
+				userName: entry.post?.tag_string_artist,
 				userUrl: '',
 				entryUrl: `https://danbooru.donmai.us/posts/${entry.postId}`,
-				description: entry.post.tag_string,
-				date: new Date(entry.post.created_at),
+				description: entry.post?.tag_string,
+				date: new Date(entry.post?.created_at),
 				w: entry.width,
 				h: entry.height,
 				src: entry.url,
@@ -265,7 +270,7 @@ export default {
 			selectedPhotoIndex: null,
 			tag: null,
 			tags: [],
-			cursor: 1,
+			cursor: 100,
 			threshold: 0.1,
 			noResults: false,
 
@@ -273,6 +278,7 @@ export default {
 			model: 'sklearn_multiclass_linear_svc',
 			category: 'bookmarked_private',
 			date: '2023-08-14',
+			info: '',
 		};
 	},
 	computed: {
@@ -286,7 +292,6 @@ export default {
 			if (this.selectedPhotoIndex === null) {
 				return {};
 			}
-			console.log(this.mode, this.photos, this.selectedPhoto);
 			if (this.mode === 'discover') {
 				return this.selectedPhoto;
 			}
@@ -303,13 +308,13 @@ export default {
 			this.updateLayout(newWidth);
 		},
 		model() {
-			this.resetMedia(1);
+			this.resetMedia(100);
 		},
 		category() {
-			this.resetMedia(1);
+			this.resetMedia(100);
 		},
 		date() {
-			this.resetMedia(1);
+			this.resetMedia(100);
 		},
 	},
 	mounted() {
@@ -367,11 +372,13 @@ export default {
 						['model', this.model],
 						['category', this.category],
 						['date', this.date],
+						['cursor', this.cursor],
 					]);
 					const res = await fetch(`https://gettopimages-vjxrdplkqa-uc.a.run.app/?${params}`);
-					const images = await res.json();
-					this.cursor = last(images).score;
-					this.entryStocks.push(...images.map((image) => getEntryObject(image, mode)));
+					const entriesData = await res.json();
+					this.cursor = last(entriesData.images).score;
+					this.entryStocks.push(...entriesData.images.map((image) => getEntryObject(image, mode)));
+					this.info = `pixiv: ${entriesData.counts.pixiv} / Danbooru: ${entriesData.counts.danbooru}`;
 				}
 
 				const newEntries = this.entryStocks.splice(0, 25);
@@ -488,14 +495,6 @@ export default {
 
 .top-area {
 	flex: 0 0 3rem;
-
-	&-row {
-		display: flex;
-
-		& > * {
-			flex: 1 1 0;
-		}
-	}
 }
 
 .photo-area {
