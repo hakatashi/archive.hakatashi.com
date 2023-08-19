@@ -245,6 +245,14 @@ const getEntryObject = (entry, mode) => {
 	return {};
 };
 
+const getISODateString = (time) => {
+	const date = new Date(time);
+	const year = date.getFullYear().toString().padStart(4, '0');
+	const month = (date.getMonth() + 1).toString().padStart(2, '0');
+	const day = date.getDate().toString().padStart(2, '0');
+	return `${year}-${month}-${day}`;
+};
+
 export default {
 	name: 'PhotoGallery',
 	components: {InfiniteLoading},
@@ -277,7 +285,7 @@ export default {
 			// discover
 			model: 'sklearn_multiclass_linear_svc',
 			category: 'bookmarked_private',
-			date: '2023-08-14',
+			date: getISODateString(Date.now() - 1000 * 60 * 60 * 24 * 3),
 			info: '',
 		};
 	},
