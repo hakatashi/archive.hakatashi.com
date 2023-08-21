@@ -235,6 +235,21 @@ const getEntryObject = (entry, mode) => {
 				src: entry.url,
 			};
 		}
+		if (entry.type === 'gelbooru') {
+			return {
+				id: entry.postId,
+				profileImage: '',
+				userId: entry.post?.owner,
+				userName: entry.post?.owner,
+				userUrl: '',
+				entryUrl: `https://gelbooru.com/index.php?page=post&s=view&id=${entry.postId}`,
+				description: entry.post?.tags,
+				date: new Date(entry.post?.created_at),
+				w: entry.width,
+				h: entry.height,
+				src: entry.url,
+			};
+		}
 		return {
 			w: entry.width,
 			h: entry.height,
@@ -386,7 +401,7 @@ export default {
 					const entriesData = await res.json();
 					this.cursor = last(entriesData.images).score;
 					this.entryStocks.push(...entriesData.images.map((image) => getEntryObject(image, mode)));
-					this.info = `pixiv: ${entriesData.counts.pixiv} / Danbooru: ${entriesData.counts.danbooru}`;
+					this.info = `pixiv: ${entriesData.counts.pixiv} / Danbooru: ${entriesData.counts.danbooru} / Gelbooru: ${entriesData.counts.gelbooru}`;
 				}
 
 				const newEntries = this.entryStocks.splice(0, 25);
