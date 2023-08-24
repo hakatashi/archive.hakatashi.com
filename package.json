@@ -11,7 +11,7 @@
     "deploy": "git switch gh-pages && git merge master && npm run build && git add . && git commit -m \"Update build\" && git push && git switch master"
   },
   "dependencies": {
-    "@babel/runtime": "^7.22.10",
+    "@babel/runtime": "^7.22.11",
     "bulma": "^0.9.4",
     "firebase": "^10.3.0",
     "justified-layout": "^4.1.0",
