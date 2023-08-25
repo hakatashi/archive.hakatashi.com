@@ -11,7 +11,7 @@
     "deploy": "git switch gh-pages && git merge master && npm run build && git add . && git commit -m \"Update build\" && git push && git switch master"
   },
   "dependencies": {
-    "@babel/runtime": "^7.22.10",
+    "@babel/runtime": "^7.22.11",
     "bulma": "^0.9.4",
     "firebase": "^10.3.0",
     "justified-layout": "^4.1.0",
@@ -36,7 +36,7 @@
     "babel-loader": "^9.1.3",
     "cross-env": "^7.0.3",
     "css-loader": "^6.8.1",
-    "eslint": "^8.47.0",
+    "eslint": "^8.48.0",
     "file-loader": "^6.2.0",
     "lodash": "^4.17.21",
     "node-sass": "^9.0.0",
