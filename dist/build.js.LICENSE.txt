@@ -1,10 +1,10 @@
 /*!
-  * PhotoSwipe 5.3.8 - https://photoswipe.com
+  * PhotoSwipe 5.3.9 - https://photoswipe.com
   * (c) 2023 Dmytro Semenov
   */
 
 /*!
-  * PhotoSwipe Lightbox 5.3.8 - https://photoswipe.com
+  * PhotoSwipe Lightbox 5.3.9 - https://photoswipe.com
   * (c) 2023 Dmytro Semenov
   */
 
