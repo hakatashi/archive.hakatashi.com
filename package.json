@@ -40,7 +40,7 @@
     "file-loader": "^6.2.0",
     "lodash": "^4.17.21",
     "node-sass": "^9.0.0",
-    "photoswipe": "^5.4.0",
+    "photoswipe": "^5.4.1",
     "sass-loader": "^13.3.2",
     "vue-infinite-loading": "github:nvitius/vue-infinite-loading#next",
     "vue-loader": "^17.2.2",
