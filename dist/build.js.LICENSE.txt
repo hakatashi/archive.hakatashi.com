@@ -136,3 +136,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+/**
+* @vue/shared v3.4.10
+* (c) 2018-present Yuxi (Evan) You and Vue contributors
+* @license MIT
+**/
