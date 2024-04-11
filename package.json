@@ -41,7 +41,7 @@
     "lodash": "^4.17.21",
     "node-sass": "^9.0.0",
     "photoswipe": "^5.4.3",
-    "sass-loader": "^14.1.1",
+    "sass-loader": "^14.2.0",
     "vue-infinite-loading": "github:nvitius/vue-infinite-loading#next",
     "vue-loader": "^17.4.2",
     "vue-style-loader": "^4.1.3",
