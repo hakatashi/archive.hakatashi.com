@@ -13,7 +13,7 @@
   "dependencies": {
     "@babel/runtime": "^7.25.7",
     "bulma": "^1.0.2",
-    "firebase": "^11.0.0",
+    "firebase": "^11.0.1",
     "justified-layout": "^4.1.0",
     "vue": "^3.5.12",
     "vue-justified-layout": "^0.2.0"
