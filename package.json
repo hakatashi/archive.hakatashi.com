@@ -32,7 +32,7 @@
     "@babel/plugin-transform-runtime": "^7.25.9",
     "@babel/preset-env": "^7.26.0",
     "@hakatashi/eslint-config": "^1.20.0",
-    "@vue/compiler-sfc": "^3.5.12",
+    "@vue/compiler-sfc": "^3.5.13",
     "babel-loader": "^9.2.1",
     "cross-env": "^7.0.3",
     "css-loader": "^7.1.2",
