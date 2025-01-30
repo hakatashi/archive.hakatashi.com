@@ -45,7 +45,7 @@
     "vue-infinite-loading": "github:nvitius/vue-infinite-loading#next",
     "vue-loader": "^17.4.2",
     "vue-style-loader": "^4.1.3",
-    "vue3-touch-events": "^5.0.11",
+    "vue3-touch-events": "^5.0.12",
     "webpack": "^5.97.1",
     "webpack-cli": "^6.0.1",
     "webpack-dev-server": "^5.2.0"
