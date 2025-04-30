@@ -30,7 +30,7 @@
     "@babel/plugin-syntax-dynamic-import": "^7.8.3",
     "@babel/plugin-syntax-import-meta": "^7.10.4",
     "@babel/plugin-transform-runtime": "^7.26.10",
-    "@babel/preset-env": "^7.26.9",
+    "@babel/preset-env": "^7.27.1",
     "@hakatashi/eslint-config": "^2.1.1",
     "@vue/compiler-sfc": "^3.5.12",
     "babel-loader": "^10.0.0",
