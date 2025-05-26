@@ -15,7 +15,7 @@
     "bulma": "^1.0.4",
     "firebase": "^11.8.1",
     "justified-layout": "^4.1.0",
-    "vue": "^3.5.14",
+    "vue": "^3.5.15",
     "vue-justified-layout": "^0.2.0"
   },
   "browserslist": [
