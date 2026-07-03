@@ -48,6 +48,6 @@
     "vue3-touch-events": "^5.0.15",
     "webpack": "^5.108.3",
     "webpack-cli": "^7.1.0",
-    "webpack-dev-server": "^5.2.6"
+    "webpack-dev-server": "^6.0.0"
   }
 }
